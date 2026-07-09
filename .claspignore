@@ -1,0 +1,5 @@
+**/**
+!src/**
+!appsscript.json
+node_modules/**
+.git/**
