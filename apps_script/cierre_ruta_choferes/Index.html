@@ -1,0 +1,2618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1a1f35">
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Carlos2095perez/logo/main/logo%20yes%20png.png">
+  <title>INDUYES - Sistema</title>
+  <style>
+    *, *::before, *::after {
+      margin:0; padding:0; box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+      touch-action:manipulation;
+    }
+    html { font-size:16px; -webkit-text-size-adjust:100%; overflow:hidden; height:100%; }
+    body {
+      font-family:'Segoe UI',system-ui,sans-serif;
+      background:#f0f2f8;
+      height:100%;
+      height:100dvh;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      position:fixed;
+      inset:0;
+    }
+
+    /* ══════════════════════════════
+       PANEL WRAPPER — ocupa todo menos el nav
+    ══════════════════════════════ */
+    #panelWrapper {
+      flex:1;
+      overflow:hidden;
+      position:relative;
+      min-height:0;
+    }
+
+    /* ══════════════════════════════
+       PANEL BASE
+    ══════════════════════════════ */
+    .panel {
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      transition:opacity 0.18s ease, transform 0.18s ease;
+    }
+    .panel.hidden {
+      opacity:0;
+      pointer-events:none;
+      transform:translateY(6px);
+    }
+    .panel.visible {
+      opacity:1;
+      pointer-events:all;
+      transform:translateY(0);
+    }
+
+    /* ══════════════════════════════
+       IFRAMES
+    ══════════════════════════════ */
+    .panel-iframe {
+      width:100%;
+      height:100%;
+      border:none;
+      display:block;
+      background:#f0f2f8;
+    }
+
+    /* ══════════════════════════════
+       PANEL CIERRE — scrollable
+    ══════════════════════════════ */
+    #panelCierre {
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
+    }
+    .cierre-inner {
+      padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* ══════════════════════════════
+       LOADING PANEL (ruta / retiro)
+    ══════════════════════════════ */
+    .iframe-loading {
+      position:absolute;
+      inset:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:14px;
+      background:#f0f2f8;
+      z-index:5;
+      transition:opacity 0.3s;
+    }
+    .iframe-loading.gone { opacity:0; pointer-events:none; }
+    .spin-ring {
+      width:48px; height:48px;
+      border:4px solid #dde3f0;
+      border-top-color:#2962ff;
+      border-radius:50%;
+      animation:spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-lbl { font-size:13px; font-weight:600; color:#718096; }
+
+    /* ══════════════════════════════
+       BOTTOM NAV
+    ══════════════════════════════ */
+    #bottomnav {
+      position:relative;
+      flex-shrink:0;
+      background:#1a1f35;
+      display:flex;
+      align-items:stretch;
+      padding-bottom:env(safe-area-inset-bottom, 0px);
+      height:calc(64px + env(safe-area-inset-bottom, 0px));
+      border-top:1px solid rgba(255,255,255,0.10);
+      z-index:9999;
+    }
+    .nav-btn {
+      flex:1;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:4px;
+      background:transparent; border:none;
+      cursor:pointer; padding:8px 4px;
+      position:relative;
+      -webkit-user-select:none; user-select:none;
+      -webkit-touch-callout:none;
+      touch-action:manipulation;
+      transition:background 0.08s;
+    }
+    .nav-btn:active,
+    .nav-btn.pressing { background:rgba(255,255,255,0.10); }
+    .nav-btn::before {
+      content:'';
+      position:absolute; top:0; left:20%; right:20%;
+      height:3px; border-radius:0 0 3px 3px;
+      background:transparent; transition:background 0.15s;
+    }
+    .nav-btn.active::before { background:#2962ff; }
+    .nav-icon {
+      width:26px; height:26px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .nav-icon svg {
+      width:24px; height:24px;
+      fill:none; stroke:#718096;
+      stroke-width:1.8;
+      stroke-linecap:round; stroke-linejoin:round;
+      transition:stroke 0.15s;
+    }
+    .nav-btn.active .nav-icon svg { stroke:#2962ff; }
+    .nav-label {
+      font-size:10px; font-weight:700;
+      color:#718096; text-transform:uppercase;
+      letter-spacing:0.5px; transition:color 0.15s;
+      white-space:nowrap;
+    }
+    .nav-btn.active .nav-label { color:#2962ff; }
+
+    /* ══════════════════════════════
+       CIERRE STYLES (copiado del original)
+    ══════════════════════════════ */
+    .container {
+      background:#f0f2f8;
+      width:100%;
+      padding:16px 14px 20px;
+    }
+    .logo-container { text-align:center; margin-bottom:8px; }
+    .logo-container img { max-width:120px; height:auto; }
+    .header { text-align:center; margin-bottom:12px; padding-bottom:12px; border-bottom:2px solid #dde3f0; }
+    .header h1 { color:#1a1f35; font-size:clamp(16px,4.5vw,22px); font-weight:800; }
+    .header h2 { color:#4a5568; font-size:clamp(12px,3vw,15px); font-weight:400; margin-top:2px; }
+    .info-bar { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin:12px 0; }
+    .info-item { background:white; padding:10px; border-radius:8px; border:1px solid #e2e8f0; text-align:center; }
+    .info-item.full { grid-column:1/-1; }
+    .info-item strong { display:block; color:#718096; font-size:9px; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:2px; }
+    .info-item span { color:#1a1f35; font-size:12px; font-weight:700; }
+    .fullscreen {
+      position:fixed; inset:0;
+      display:flex; flex-direction:column;
+      justify-content:center; align-items:center;
+      z-index:99999; animation:fadeIn 0.25s ease;
+    }
+    .fullscreen h1 { color:white; font-size:clamp(28px,9vw,56px); font-weight:900; text-shadow:0 4px 20px rgba(0,0,0,0.3); text-align:center; padding:0 20px; white-space:pre-line; }
+    @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+    @keyframes fadeOut { from{opacity:1} to{opacity:0} }
+    @keyframes shimmer { from{transform:translateX(-100%)} to{transform:translateX(100%)} }
+    .color-selection { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:18px 0; }
+    .color-btn { height:76px; font-size:15px; font-weight:800; border:none; border-radius:12px; cursor:pointer; text-transform:uppercase; letter-spacing:1px; transition:transform 0.12s; box-shadow:0 4px 14px rgba(0,0,0,0.18); }
+    .color-btn:active { transform:scale(0.96); }
+    .color-btn.rosado   { background:#e91e8c; color:white; }
+    .color-btn.azul     { background:#2962ff; color:white; }
+    .color-btn.verde    { background:#00a844; color:white; }
+    .color-btn.amarillo { background:#ffd600; color:#333; }
+    .color-btn.naranja  { background:#ff6d00; color:white; }
+    .color-btn.blanco   { background:#eceff1; color:#333; border:2px solid #cfd8dc; }
+    .auth-section { text-align:center; max-width:320px; margin:0 auto; padding-top:16px; }
+    .auth-section h2 { color:#1a1f35; font-size:19px; margin-bottom:18px; }
+    .auth-section input { width:100%; padding:15px; font-size:24px; font-weight:700; border:2px solid #dde3f0; border-radius:12px; text-align:center; text-transform:uppercase; letter-spacing:10px; background:white; margin-bottom:12px; -webkit-appearance:none; }
+    .auth-section input:focus { outline:none; border-color:#2962ff; }
+    .btn { padding:14px 22px; font-size:15px; font-weight:700; border:none; border-radius:10px; cursor:pointer; min-height:48px; transition:transform 0.1s,opacity 0.1s; }
+    .btn:active { transform:scale(0.97); opacity:0.88; }
+    .btn-primary   { background:#2962ff; color:white; }
+    .btn-success   { background:#00a844; color:white; }
+    .btn-danger    { background:#d32f2f; color:white; }
+    .btn-secondary { background:#78909c; color:white; }
+    .tabs { display:flex; margin:14px 0 0; border-bottom:2px solid #dde3f0; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .tabs::-webkit-scrollbar { display:none; }
+    .tab { padding:11px 18px; font-size:14px; font-weight:700; background:transparent; border:none; border-bottom:3px solid transparent; cursor:pointer; color:#718096; white-space:nowrap; min-height:46px; }
+    .tab.active { color:#2962ff; border-bottom-color:#2962ff; }
+    .tab-content { display:none; padding-top:14px; }
+    .tab-content.active { display:block; animation:fadeIn 0.2s ease; }
+    .skeleton-list { display:flex; flex-direction:column; gap:7px; }
+    .skeleton-card { background:white; border-radius:10px; padding:14px; height:100px; position:relative; overflow:hidden; }
+    .skeleton-card::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.65) 50%,transparent 100%); animation:shimmer 1.2s infinite; }
+    .sk-line { background:#e8ecf3; border-radius:4px; margin-bottom:7px; }
+    .facturas-list { display:flex; flex-direction:column; gap:20px; }
+    .f-card { background:white; border-radius:12px; padding:22px 16px 20px; border-left:6px solid #e2e8f0; box-shadow:0 1px 4px rgba(0,0,0,0.07); transition:background 0.25s ease; }
+    .f-card.pp   { border-left-color:#00a844; background:rgba(0,168,68,0.08); }
+    .f-card.cc   { border-left-color:#ff8f00; background:rgba(255,143,0,0.10); }
+    .f-card.bloq { border-left-color:#bdbdbd; background:rgba(189,189,189,0.12); opacity:0.65; }
+    .f-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:18px; }
+    .f-info { flex:1; min-width:0; }
+    .f-numero { font-size:22px; font-weight:900; color:#1a1f35; letter-spacing:-0.5px; line-height:1.1; margin-bottom:8px; }
+    .f-cliente { font-size:14px; font-weight:500; color:#4a5568; line-height:1.4; word-break:break-word; }
+    .f-right   { flex-shrink:0; text-align:right; }
+    .f-valor   { font-size:18px; font-weight:900; color:#00895c; }
+    .f-abono   { font-size:11px; color:#2962ff; font-weight:700; margin-top:2px; }
+    .f-bottom  { display:flex; align-items:stretch; gap:7px; }
+    .badge { display:inline-flex; align-items:center; padding:5px 10px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; flex-shrink:0; align-self:center; }
+    .badge.pp   { background:rgba(0,168,68,0.15);  color:#1b5e20; border:1.5px solid #4caf50; }
+    .badge.cc   { background:rgba(255,143,0,0.18); color:#6d4c00; border:1.5px solid #ffc107; }
+    .badge.pend { background:#fce4ec; color:#880e4f; border:1.5px solid #f48fb1; }
+    .badge.bloq { background:#eee;   color:#616161; border:1.5px solid #bdbdbd; }
+    .f-actions { display:flex; gap:7px; flex:1; }
+    .btn-a { padding:12px 6px; font-size:14px; font-weight:800; border:none; border-radius:9px; cursor:pointer; min-height:58px; flex:1; transition:transform 0.1s, opacity 0.1s; letter-spacing:0.3px; }
+    .btn-a:active { transform:scale(0.95); opacity:0.88; }
+    .btn-a.pp    { background:#00a844; color:white; }
+    .btn-a.cc    { background:#ff8f00; color:white; }
+    .btn-a.abono { background:#2962ff; color:white; }
+    .btn-a.undo  { background:#eceff1; color:#546e7a; border:1.5px solid #cfd8dc; flex:0 0 44px; font-size:16px; font-weight:900; }
+    .btn-a:disabled { opacity:0.32; pointer-events:none; }
+    .simple-list { display:flex; flex-direction:column; gap:10px; }
+    .s-card { background:white; border-radius:10px; padding:16px 15px; display:flex; justify-content:space-between; align-items:center; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+    .s-left { flex:1; min-width:0; }
+    .s-title { font-size:13px; font-weight:700; color:#1a1f35; word-break:break-word; }
+    .s-sub   { font-size:11px; color:#718096; margin-top:2px; }
+    .s-right { flex-shrink:0; text-align:right; }
+    .s-valor { font-size:15px; font-weight:900; color:#00895c; }
+    .et-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:12px 0; }
+    .et-btn { padding:18px 10px; border:none; border-radius:11px; cursor:pointer; color:white; font-weight:700; font-size:13px; min-height:72px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; text-align:center; transition:transform 0.1s; }
+    .et-btn:active { transform:scale(0.96); }
+    .et-btn.full   { grid-column:1/-1; }
+    .et-gas  { background:linear-gradient(135deg,#1565c0,#0d47a1); }
+    .et-alim { background:linear-gradient(135deg,#2e7d32,#1b5e20); }
+    .et-park { background:linear-gradient(135deg,#e65100,#bf360c); }
+    .et-desc { background:linear-gradient(135deg,#c62828,#b71c1c); }
+    .et-noent{ background:linear-gradient(135deg,#37474f,#263238); }
+    .cam-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin:10px 0; }
+    .cam-btn { padding:12px 5px; border:2px solid #dde3f0; border-radius:9px; background:white; cursor:pointer; text-align:center; font-weight:700; font-size:12px; min-height:60px; transition:all 0.15s; }
+    .cam-btn:active { background:#e3f2fd; }
+    .cam-btn.sel    { background:#2962ff; color:white; border-color:#2962ff; }
+    .alim-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0; }
+    .alim-btn { padding:20px 10px; border:none; border-radius:11px; cursor:pointer; color:white; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:5px; min-height:90px; transition:transform 0.1s; }
+    .alim-btn:active { transform:scale(0.96); }
+    .alim-text  { font-size:14px; }
+    .alim-price { font-size:22px; font-weight:900; }
+    .alim-des { background:linear-gradient(135deg,#f57f17,#e65100); }
+    .alim-alm { background:linear-gradient(135deg,#2e7d32,#1b5e20); }
+    .close-area { margin-top:24px; padding-top:14px; border-top:2px solid #dde3f0; }
+    .btn-cerrar { width:100%; padding:17px; font-size:16px; font-weight:900; background:linear-gradient(135deg,#c62828,#b71c1c); color:white; border:none; border-radius:13px; cursor:pointer; min-height:56px; box-shadow:0 4px 16px rgba(198,40,40,0.32); transition:transform 0.1s; }
+    .btn-cerrar:active { transform:scale(0.98); }
+    .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:10000; justify-content:center; align-items:flex-end; }
+    .modal.active { display:flex; animation:fadeIn 0.18s ease; }
+    .modal-content { background:white; border-radius:18px 18px 0 0; padding:22px 15px 30px; width:100%; max-height:92vh; overflow-y:auto; -webkit-overflow-scrolling:touch; animation:slideUp 0.2s ease; }
+    @keyframes slideUp { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
+    .modal-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding-bottom:11px; border-bottom:2px solid #eef0f6; }
+    .modal-hdr h3 { color:#1a1f35; font-size:17px; font-weight:800; }
+    .close-m { font-size:26px; cursor:pointer; color:#90a4ae; padding:4px 8px; border-radius:8px; }
+    .close-m:active { background:#f0f0f0; }
+    .fg { margin:12px 0; }
+    .fg label { display:block; margin-bottom:5px; color:#1a1f35; font-weight:700; font-size:14px; }
+    .fg input, .fg select { width:100%; padding:12px; border:2px solid #dde3f0; border-radius:9px; font-size:16px; background:white; -webkit-appearance:none; }
+    .fg input:focus, .fg select:focus { outline:none; border-color:#2962ff; }
+    .btn-group { display:flex; gap:9px; margin-top:13px; flex-wrap:wrap; }
+    .btn-group button { flex:1; min-width:100px; }
+    .resumen { background:#f0f4ff; padding:14px; border-radius:11px; margin:12px 0; }
+    .r-item { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #d8e2f5; font-size:13px; }
+    .r-item:last-child { border-bottom:none; }
+    .r-item.total { font-size:17px; font-weight:800; color:#00895c; border-top:2px solid #00c853; margin-top:7px; padding-top:11px; }
+    .denom-hdr { display:flex; justify-content:space-between; align-items:center; margin:16px 0 9px; }
+    .denom-hdr h4 { font-size:14px; color:#1a1f35; font-weight:800; }
+    .denom-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .d-card { background:white; border:2px solid #dde3f0; border-radius:14px; overflow:hidden; }
+    .d-card.has { border-color:#2962ff; }
+    .d-top { background:#f0f4ff; padding:10px 12px 8px; display:flex; justify-content:space-between; align-items:center; }
+    .d-lbl  { font-size:17px; font-weight:900; color:#1a1f35; letter-spacing:-0.3px; }
+    .d-sub  { font-size:14px; font-weight:800; color:#2962ff; }
+    .d-row  { display:flex; align-items:stretch; }
+    .d-btn  { flex:1; padding:16px 5px; border:none; background:transparent; font-size:32px; font-weight:900; cursor:pointer; min-height:64px; display:flex; align-items:center; justify-content:center; transition:background 0.1s; }
+    .d-btn:active { background:#e8ecff; }
+    .d-btn.m { color:#d32f2f; }
+    .d-btn.p { color:#00895c; }
+    .d-mid { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 8px; min-width:60px; border-left:1px solid #eef0f6; border-right:1px solid #eef0f6; background:#fafbff; }
+    .d-cnt   { font-size:30px; font-weight:900; color:#1a1f35; line-height:1; }
+    .d-units { font-size:10px; color:#90a4ae; text-transform:uppercase; margin-top:2px; letter-spacing:0.5px; }
+    .cnt-box { background:linear-gradient(135deg,#1a1f35,#2d3561); padding:16px; border-radius:13px; margin:13px 0; text-align:center; }
+    .cnt-box h4 { color:#90a4ae; font-size:11px; text-transform:uppercase; letter-spacing:1px; margin-bottom:7px; }
+    .cnt-total { font-size:clamp(32px,8vw,48px); font-weight:900; color:#69f0ae; font-family:'Courier New',monospace; letter-spacing:-1px; }
+    .cnt-cmp { margin-top:11px; padding:9px; background:rgba(255,255,255,0.08); border-radius:9px; display:flex; justify-content:space-around; align-items:center; gap:8px; flex-wrap:wrap; }
+    .cc-lbl { color:#90a4ae; font-size:11px; margin-bottom:3px; }
+    .cc-val { color:white; font-size:15px; font-weight:800; }
+    .cc-dif { padding:6px 13px; border-radius:8px; font-weight:800; font-size:13px; }
+    .cc-dif.ok   { background:#00c853; color:white; }
+    .cc-dif.low  { background:#d32f2f; color:white; }
+    .cc-dif.high { background:#ff6d00; color:white; }
+    .alert { padding:12px; border-radius:9px; font-size:13px; font-weight:600; margin:9px 0; }
+    .alert-danger  { background:#ffebee; color:#b71c1c; border:1.5px solid #ef9a9a; }
+    .alert-warning { background:#fff8e1; color:#6d4c00; border:1.5px solid #ffe082; }
+    .alert ul { margin:6px 0 0 13px; }
+    .alert li  { margin-bottom:3px; }
+    #signatureCanvas { border:2px solid #dde3f0; border-radius:11px; cursor:crosshair; width:100%; display:block; margin:10px auto; touch-action:none; }
+    .hidden { display:none !important; }
+    @media(min-width:480px) {
+      .denom-grid      { grid-template-columns:1fr 1fr 1fr; }
+      .color-selection { grid-template-columns:1fr 1fr 1fr; }
+    }
+    #despachoMap { position:relative; overflow:hidden; width:100%; height:280px; border-radius:12px; margin-bottom:12px; background:#e8ecef; }
+    .btn-centrar { position:absolute; left:10px; bottom:10px; background:white; color:#2962ff; border:none; border-radius:24px; padding:9px 16px; font-weight:700; font-size:12.5px; box-shadow:0 2px 8px rgba(0,0,0,0.3); display:flex; align-items:center; gap:6px; z-index:6; }
+    #despachoNavContainer.nav-fullscreen {
+      position:fixed; top:0; left:0; right:0; bottom:0; width:100%; height:100%;
+      z-index:9999; background:#11151f;
+      display:flex; flex-direction:column;
+    }
+    #despachoNavContainer.nav-fullscreen .btn-iniciar-ruta { display:none; }
+    #despachoNavContainer.nav-fullscreen #navTurnBanner { border-radius:0; flex-shrink:0; }
+    #despachoNavContainer.nav-fullscreen #despachoMap {
+      flex:1 1 auto; height:auto; border-radius:0; margin-bottom:0; min-height:0;
+    }
+    #despachoNavContainer.nav-fullscreen #navStatsRow { border-radius:0; flex-shrink:0; }
+    #despachoNavContainer.nav-fullscreen #navAccion {
+      flex-shrink:0; background:#1a1f35; padding-bottom:env(safe-area-inset-bottom);
+    }
+    .parada-card { background:white; border-radius:12px; padding:14px 16px; border-left:6px solid #2962ff; box-shadow:0 1px 4px rgba(0,0,0,0.07); display:flex; align-items:center; gap:12px; margin-bottom:10px; cursor:pointer; transition:transform 0.1s ease; }
+    .parada-card:active { transform:scale(0.98); }
+    .parada-num { width:30px; height:30px; border-radius:50%; background:#2962ff; color:white; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .parada-info { flex:1; min-width:0; }
+    .parada-cliente { font-weight:700; font-size:14px; color:#1a1f35; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .parada-sub { font-size:12px; color:#64748b; margin-top:2px; }
+    .parada-chevron { flex-shrink:0; color:#cbd5c9; font-size:20px; }
+    .parada-card.sin-ubi { border-left-color:#e2e8f0; opacity:0.75; cursor:default; }
+    .parada-card.sin-ubi:active { transform:none; }
+    .parada-card.sin-ubi .parada-num { background:#94a3b8; }
+    .parada-card.entregado { border-left-color:#00a844; background:#f2fbf5; }
+    .parada-card.entregado .parada-num { background:#00a844; }
+    .parada-card.entregado .parada-cliente { text-decoration:line-through; color:#7c8a86; }
+    .parada-card.pospuesto { border-left-color:#ff9800; }
+    .parada-card.pospuesto .parada-num { background:#ff9800; }
+    .despacho-titulo { font-size:13px; font-weight:800; color:#4a5568; margin:14px 0 8px; text-transform:uppercase; }
+
+    .dp-progreso { background:linear-gradient(135deg,#1a1f35,#0f2a1f); border-radius:14px; padding:16px 18px; margin-bottom:12px; color:white; }
+    .dp-top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+    .dp-label { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; opacity:0.65; }
+    .dp-count { font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; }
+    .dp-track { height:10px; border-radius:20px; background:rgba(255,255,255,0.14); overflow:hidden; }
+    .dp-fill { height:100%; border-radius:20px; background:linear-gradient(90deg,#00c853,#64dd8f); transition:width 0.5s cubic-bezier(.4,0,.2,1); }
+    .dp-sub { margin-top:9px; font-size:12.5px; opacity:0.85; display:flex; align-items:center; gap:6px; }
+    .dp-sub.done { color:#7fffb0; opacity:1; font-weight:700; }
+
+    .btn-iniciar-ruta { width:100%; background:linear-gradient(135deg,#2962ff,#1746c9); color:white; border:none; border-radius:12px; padding:14px; font-weight:800; font-size:15px; margin-bottom:12px; box-shadow:0 3px 10px rgba(41,98,255,0.35); }
+    .btn-iniciar-ruta:disabled { background:#cbd5c9; box-shadow:none; }
+
+    .nav-turn-banner { background:#1a1f35; color:white; border-radius:12px 12px 0 0; padding:10px 14px; display:flex; align-items:center; gap:10px; }
+    .nav-turn-icon { width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
+    .nav-turn-texto { flex:1; min-width:0; }
+    .nav-turn-dist { font-size:15px; font-weight:800; }
+    .nav-turn-calle { font-size:11px; opacity:0.7; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .nav-turn-cerrar { background:rgba(255,255,255,0.12); border:none; color:white; border-radius:8px; padding:7px 9px; font-size:11px; cursor:pointer; flex-shrink:0; }
+    .nav-stats-row { background:#1a1f35; color:white; display:flex; align-items:stretch; }
+    .ns-col { flex:1; padding:7px 6px; text-align:center; }
+    .ns-col .ns-val { color:white; font-size:14.5px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.15; }
+    .ns-col .ns-lbl { color:white; font-size:9px; opacity:0.6; text-transform:uppercase; letter-spacing:0.03em; margin-top:1px; }
+    .ns-col-time { background:#00c853; }
+    .ns-col-time .ns-val-time { color:#06280f; font-size:23px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.1; }
+    .ns-col-time .ns-lbl-time { color:#06280f; font-size:9.5px; font-weight:700; opacity:0.8; text-transform:uppercase; letter-spacing:0.03em; margin-top:1px; }
+
+    .nav-destino-banner { background:linear-gradient(135deg,#1746c9,#2962ff); color:white; padding:7px 16px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .nav-destino-banner .nd-etiqueta { display:block; font-size:9px; font-weight:700; opacity:0.75; text-transform:uppercase; letter-spacing:0.05em; }
+    .nav-destino-banner .nd-cliente { font-size:13.5px; font-weight:800; }
+
+    .nav-accion-row { display:flex; gap:8px; padding:10px 16px 12px; }
+    .btn-entregado-grande { flex:1; min-width:0; background:linear-gradient(135deg,#00c853,#009624); color:white; border:none; border-radius:14px; padding:15px 8px; font-weight:800; font-size:14.5px; box-shadow:0 4px 14px rgba(0,150,36,0.4); }
+    .btn-entregado-grande.llegada { background:linear-gradient(135deg,#00e676,#00c853); box-shadow:0 0 0 3px rgba(0,230,118,0.4), 0 4px 14px rgba(0,150,36,0.5); }
+    .btn-maps-icon { width:52px; flex-shrink:0; background:white; border:2px solid #1a73e8; border-radius:14px; font-size:23px; display:flex; align-items:center; justify-content:center; }
+    .btn-maps-icon:active { background:#eef4fe; }
+    .nav-accion-secundaria { display:flex; gap:8px; padding:0 16px 12px; }
+    .btn-secundario-accion { flex:1; min-width:0; background:rgba(255,255,255,0.08); color:#c7cde0; border:1.5px solid rgba(255,255,255,0.18); border-radius:11px; padding:9px 6px; font-weight:700; font-size:12px; }
+    .btn-secundario-accion:active { background:rgba(255,255,255,0.16); }
+    .parada-card.nav-actual { box-shadow:0 0 0 2px #ff6d00, 0 2px 8px rgba(255,109,0,0.25); }
+    .btn-marcar-directo { background:#e2e8f0; color:#475569; border:none; border-radius:8px; padding:8px 12px; font-weight:700; font-size:12px; flex-shrink:0; }
+    .btn-marcar-directo.on { background:#00a844; color:white; }
+    .btn-reabrir { background:#fff3e0; color:#e65100; border:1px solid #ffcc80; border-radius:8px; padding:8px 11px; font-weight:800; font-size:12px; flex-shrink:0; cursor:pointer; }
+    .btn-reabrir:active { background:#ffe0b2; }
+
+    /* ══════════════════════════════
+       NAVEGACIÓN — rediseño compacto (más mapa)
+    ══════════════════════════════ */
+    /* El panel visible usa transform (para su animación) y eso rompía el
+       position:fixed del contenedor de navegación (se veía a media
+       pantalla). Al navegar se neutraliza ese transform para que la
+       vista ocupe TODA la pantalla de forma automática. */
+    #panelCierre.nav-abierta { transform:none !important; }
+
+    /* Cubrir la barra de pestañas (#bottomnav tiene z-index:9999) */
+    #despachoNavContainer.nav-fullscreen { z-index:10000; }
+
+    /* Barra superior = NOMBRE DEL CLIENTE (grande, verde, centrado) */
+    #despachoNavContainer.nav-fullscreen #navTurnBanner {
+      padding:9px 8px; padding-top:calc(9px + env(safe-area-inset-top,0px)); gap:8px;
+      background:linear-gradient(135deg,#0ca678,#12b886); border-radius:0; align-items:center;
+    }
+    .nav-exit-btn {
+      background:rgba(255,255,255,0.24); border:none; color:#fff; border-radius:50%;
+      width:40px; height:40px; font-size:18px; font-weight:700; flex-shrink:0; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .nav-exit-btn:active { background:rgba(255,255,255,0.4); }
+    .nav-exit-spacer { width:40px; flex-shrink:0; }
+    .nav-cli-nombre {
+      flex:1; min-width:0; color:#fff; font-weight:800; font-size:18.5px; line-height:1.15;
+      text-align:center; text-shadow:0 1px 2px rgba(0,0,0,0.18);
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    }
+
+    /* Burbuja de aviso de maniobra (aparece solo al acercarse) */
+    .nav-burbuja {
+      position:absolute; top:10px; left:50%; z-index:8; display:flex; align-items:center; gap:10px;
+      max-width:84%; background:#1a73e8; color:#fff; padding:9px 15px; border-radius:16px;
+      box-shadow:0 5px 18px rgba(26,115,232,0.5); font-weight:800;
+      transform:translateX(-50%) translateY(-10px); opacity:0; pointer-events:none;
+      transition:opacity 0.25s ease, transform 0.25s ease;
+    }
+    .nav-burbuja.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    .nav-burbuja.alerta { background:#e53935; box-shadow:0 5px 18px rgba(229,57,53,0.55); }
+    .nav-burbuja.llegada { background:#00a844; box-shadow:0 5px 18px rgba(0,168,68,0.55); }
+    .nav-burbuja .nb-ic { width:26px; height:26px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .nav-burbuja .nb-tx { font-size:15px; line-height:1.15; min-width:0; }
+    .nav-burbuja .nb-tx small { display:block; font-size:11px; opacity:0.9; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    /* Franja inferior de stats (tiempo · llegada · distancia) */
+    #despachoNavContainer.nav-fullscreen #navStatsRow {
+      position:static; transform:none; width:100%; flex-shrink:0; top:auto; left:auto; bottom:auto;
+      display:flex; background:#1a1f35; border-radius:0; overflow:visible;
+      box-shadow:0 -2px 10px rgba(0,0,0,0.3); backdrop-filter:none; z-index:6;
+      padding-bottom:env(safe-area-inset-bottom,0px);
+    }
+    .nsp-col { flex:1; padding:9px 6px; text-align:center; }
+    .nsp-col + .nsp-col { border-left:1px solid rgba(255,255,255,0.12); }
+    .nsp-col-mid { background:#00c853; }
+    .nsp-val { font-size:16.5px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.1; color:#fff; }
+    .nsp-col-mid .nsp-val { color:#06280f; font-size:21px; }
+    .nsp-lbl { font-size:9px; opacity:0.62; text-transform:uppercase; letter-spacing:0.03em; margin-top:2px; color:#fff; }
+    .nsp-col-mid .nsp-lbl { color:#06280f; opacity:0.85; font-weight:700; }
+
+    #despachoNavContainer.nav-fullscreen #navAccion { position:static; background:transparent; padding:0; }
+    /* Columna de botones laterales (FAB) */
+    .nav-fab-col {
+      position:absolute; right:11px; top:50%; transform:translateY(-50%); z-index:7;
+      display:flex; flex-direction:column; gap:13px; align-items:center;
+    }
+    .navfab {
+      width:54px; height:54px; border-radius:50%; border:none; cursor:pointer; color:#fff;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+      box-shadow:0 3px 11px rgba(0,0,0,0.4); -webkit-tap-highlight-color:transparent; transition:transform 0.1s;
+    }
+    .navfab:active { transform:scale(0.9); }
+    .navfab .fab-ic { font-size:20px; line-height:1; }
+    .navfab .fab-lbl { font-size:8px; font-weight:800; text-transform:uppercase; letter-spacing:0.02em; }
+    .fab-maps { background:linear-gradient(135deg,#1a73e8,#1456ad); }
+    .fab-entregado { width:66px; height:66px; background:linear-gradient(135deg,#00c853,#009624); }
+    .fab-entregado .fab-ic { font-size:27px; }
+    .fab-entregado .fab-lbl { font-size:8.5px; }
+    .fab-entregado.llegada { box-shadow:0 0 0 4px rgba(0,230,118,0.45), 0 3px 13px rgba(0,150,36,0.55); animation:fabPulse 1.1s infinite; }
+    @keyframes fabPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.07)} }
+    .fab-reagendar { background:linear-gradient(135deg,#ff9800,#f57c00); }
+    .fab-cancelar { background:linear-gradient(135deg,#ef5350,#c62828); }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════
+     PANEL WRAPPER
+══════════════════════════════ -->
+<div id="panelWrapper">
+
+  <!-- ── PANEL: RUTA ── -->
+  <div id="panelRuta" class="panel hidden">
+    <div class="iframe-loading" id="loadingRuta">
+      <div class="spin-ring"></div>
+      <div class="loading-lbl">Cargando Inicio/Fin de Ruta...</div>
+    </div>
+    <iframe id="iframeRuta" class="panel-iframe"
+            src="https://script.google.com/macros/s/AKfycbx2g7umucn7QiWq-KsyIwV6T2hqlc9j97wiy6A17Dg8aVzdoLY0eS-uWj6-by2oJfbM/exec"
+            onload="iframeLoaded('loadingRuta')"></iframe>
+  </div>
+
+  <!-- ── PANEL: CIERRE (embebido) ── -->
+  <div id="panelCierre" class="panel visible">
+    <div class="cierre-inner container">
+
+      <!-- PASO 1: Color -->
+      <div id="colorSelection" class="step">
+        <div class="logo-container">
+          <img src="https://raw.githubusercontent.com/Carlos2095perez/logo/main/logo%20yes%20png.png" alt="INDUYES">
+        </div>
+        <div class="header">
+          <h1>INDUSTRIA ALIMENTICIA YES</h1>
+          <h2>Sistema de Cierre de Ruta</h2>
+        </div>
+        <p style="text-align:center;color:#4a5568;font-weight:700;margin-bottom:14px;">Selecciona tu color de carpeta</p>
+        <div class="color-selection">
+          <button class="color-btn rosado"   onclick="seleccionarColor('ROSADO')">ROSADO</button>
+          <button class="color-btn azul"     onclick="seleccionarColor('AZUL')">AZUL</button>
+          <button class="color-btn verde"    onclick="seleccionarColor('VERDE')">VERDE</button>
+          <button class="color-btn amarillo" onclick="seleccionarColor('AMARILLO')">AMARILLO</button>
+          <button class="color-btn naranja"  onclick="seleccionarColor('NARANJA')">NARANJA</button>
+          <button class="color-btn blanco"   onclick="seleccionarColor('BLANCO')">BLANCO</button>
+        </div>
+      </div>
+
+      <!-- PASO 2: Auth -->
+      <div id="authSection" class="step hidden">
+        <div class="logo-container">
+          <img src="https://raw.githubusercontent.com/Carlos2095perez/logo/main/logo%20yes%20png.png" alt="INDUYES">
+        </div>
+        <div class="auth-section">
+          <h2>Ingresa tu clave</h2>
+          <input type="text" id="claveInput" placeholder="CLAVE" maxlength="5"
+                 autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="btn btn-primary" style="width:100%;" onclick="validarClave()">INGRESAR</button>
+        </div>
+      </div>
+
+      <!-- PASO 3: Sistema -->
+      <div id="mainSystem" class="step hidden">
+        <div class="logo-container">
+          <img src="https://raw.githubusercontent.com/Carlos2095perez/logo/main/logo%20yes%20png.png" alt="INDUYES">
+        </div>
+        <div class="header">
+          <h1>INDUSTRIA ALIMENTICIA YES</h1>
+          <h2>CIERRE DE RUTA</h2>
+        </div>
+        <div class="info-bar">
+          <div class="info-item"><strong>Fecha</strong><span id="infoFecha">-</span></div>
+          <div class="info-item"><strong>Hora</strong><span id="infoHora">-</span></div>
+          <div class="info-item"><strong>Ruta</strong><span id="infoRuta">-</span></div>
+          <div class="info-item"><strong>Color</strong><span id="infoColor">-</span></div>
+          <div class="info-item full"><strong>Responsable</strong><span id="infoResponsable">-</span></div>
+        </div>
+        <div class="tabs">
+          <button class="tab active" onclick="cambiarTab('facturas',event)">Facturas</button>
+          <button class="tab" onclick="cambiarTab('egresos',event)">Egresos</button>
+          <button class="tab" onclick="cambiarTab('cobros',event)">Cobros</button>
+          <button class="tab" onclick="cambiarTab('despacho',event)">Despacho</button>
+        </div>
+        <div id="tabFacturas" class="tab-content active">
+          <div id="skeletonFacturas" class="skeleton-list">
+            <div class="skeleton-card"><div class="sk-line" style="width:70%;height:12px;"></div><div class="sk-line" style="width:40%;height:10px;"></div></div>
+            <div class="skeleton-card"><div class="sk-line" style="width:80%;height:12px;"></div><div class="sk-line" style="width:35%;height:10px;"></div></div>
+            <div class="skeleton-card"><div class="sk-line" style="width:65%;height:12px;"></div><div class="sk-line" style="width:50%;height:10px;"></div></div>
+          </div>
+          <div id="facturasList" class="facturas-list hidden"></div>
+        </div>
+        <div id="tabEgresos" class="tab-content">
+          <button class="btn btn-success" style="width:100%;margin-bottom:12px;" onclick="abrirModalEgreso()">Nuevo Egreso</button>
+          <div id="egresosList" class="simple-list"></div>
+        </div>
+        <div id="tabCobros" class="tab-content">
+          <div id="cobrosList" class="simple-list"></div>
+        </div>
+        <div id="tabDespacho" class="tab-content">
+          <div class="dp-progreso">
+            <div class="dp-top">
+              <span class="dp-label">Progreso de entregas</span>
+              <span class="dp-count" id="dpCount">0 / 0</span>
+            </div>
+            <div class="dp-track"><div class="dp-fill" id="dpFill" style="width:0%"></div></div>
+            <div class="dp-sub" id="dpSub">Cargando…</div>
+          </div>
+          <div id="despachoNavContainer">
+            <button class="btn-iniciar-ruta hidden" id="btnIniciarRuta" onclick="iniciarRuta()">▶ Iniciar ruta</button>
+            <div id="navTurnBanner" class="nav-turn-banner hidden"></div>
+            <div id="despachoMap">
+              <button class="btn-centrar hidden" id="btnCentrar" onclick="centrarMapa()">▲ Centrar</button>
+            </div>
+            <div id="navStatsRow" class="nav-stats-row hidden"></div>
+            <div id="navAccion" class="hidden"></div>
+          </div>
+          <div id="despachoEstado" style="text-align:center;color:#90a4ae;padding:16px;">Cargando ubicaciones...</div>
+          <div id="despachoParadas"></div>
+          <div id="despachoSinUbicacionWrap" class="hidden">
+            <div class="despacho-titulo">Sin ubicación registrada</div>
+            <div id="despachoSinUbicacion"></div>
+          </div>
+        </div>
+        <div class="close-area">
+          <button class="btn-cerrar" onclick="validarYCerrar()">CERRAR RUTA</button>
+        </div>
+      </div>
+
+    </div><!-- /cierre-inner -->
+  </div><!-- /panelCierre -->
+
+  <!-- ── PANEL: RETIRO ── -->
+  <div id="panelRetiro" class="panel hidden">
+    <div class="iframe-loading" id="loadingRetiro">
+      <div class="spin-ring"></div>
+      <div class="loading-lbl">Cargando Retiros...</div>
+    </div>
+    <iframe id="iframeRetiro" class="panel-iframe"
+            src="https://script.google.com/macros/s/AKfycbx139hASyFxkPUHINo0qicmaI7e-PJ4KDgk_l8-CyOEi72swfcBkbWJ_ImJQ53Dck7LCg/exec"
+            onload="iframeLoaded('loadingRetiro')"></iframe>
+  </div>
+
+</div><!-- /panelWrapper -->
+
+<!-- ══════════════════════════════
+     BARRA DE NAVEGACIÓN INFERIOR
+══════════════════════════════ -->
+<nav id="bottomnav">
+
+  <button class="nav-btn" id="nav-ruta">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24">
+        <circle cx="5"  cy="6"  r="2"/>
+        <circle cx="19" cy="18" r="2"/>
+        <path d="M5 8v3a4 4 0 0 0 4 4h6a4 4 0 0 1 4 4"/>
+      </svg>
+    </div>
+    <span class="nav-label">Ruta</span>
+  </button>
+
+  <button class="nav-btn active" id="nav-cierre">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+    <span class="nav-label">Cierre</span>
+  </button>
+
+  <button class="nav-btn" id="nav-retiro">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24">
+        <rect x="2" y="7" width="20" height="14" rx="2"/>
+        <circle cx="16" cy="14" r="1" fill="#718096" stroke="none"/>
+        <path d="M22 10h-4a2 2 0 0 0 0 4h4"/>
+        <path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/>
+      </svg>
+    </div>
+    <span class="nav-label">Retiro</span>
+  </button>
+
+</nav>
+
+<!-- ══════════════════════════════
+     MODALES CIERRE
+══════════════════════════════ -->
+<div id="modalEgreso" class="modal">
+  <div class="modal-content">
+    <div class="modal-hdr">
+      <h3 id="tituloModalEgreso">Egreso</h3>
+      <span class="close-m" onclick="cerrarModal('modalEgreso')">&times;</span>
+    </div>
+    <div id="bodyEgreso"></div>
+  </div>
+</div>
+<input type="file" id="inputFotoIncidencia" accept="image/*" capture="environment" class="hidden">
+
+<div id="modalCobro" class="modal">
+  <div class="modal-content">
+    <div class="modal-hdr">
+      <h3>Registrar Cobro</h3>
+      <span class="close-m" onclick="cerrarModal('modalCobro')">&times;</span>
+    </div>
+    <div>
+      <p style="font-size:14px;margin-bottom:3px;"><strong>Cliente:</strong> <span id="mCobroCliente"></span></p>
+      <p style="font-size:14px;margin-bottom:3px;"><strong>Factura:</strong> <span id="mCobroNumero"></span></p>
+      <p style="font-size:14px;margin-bottom:12px;"><strong>Valor:</strong> $<span id="mCobroValor"></span></p>
+      <div class="fg">
+        <label>Tipo:</label>
+        <select id="mCobroTipo" onchange="cambiarTipoCobro()">
+          <option value="">-- Seleccionar --</option>
+          <option value="TOTAL">Cobro Total</option>
+          <option value="PARCIAL">Cobro Parcial</option>
+          <option value="NO_COBRADO">No Cobrado</option>
+        </select>
+      </div>
+      <div class="fg hidden" id="gValorCobro">
+        <label>Valor Cobrado:</label>
+        <input type="number" id="mCobroValorCobrado" step="0.01" min="0">
+      </div>
+      <div class="fg hidden" id="gFormaPago">
+        <label>Forma de Pago:</label>
+        <select id="mCobroFormaPago" onchange="cambiarFormaPago()">
+          <option value="">-- Seleccionar --</option>
+          <option value="EFECTIVO">Efectivo</option>
+          <option value="CHEQUE">Cheque</option>
+          <option value="TRANSFERENCIA">Transferencia</option>
+        </select>
+      </div>
+      <div class="fg hidden" id="gCheque">
+        <label>Banco:</label>
+        <select id="mCobroBancoCheque">
+          <option value="PICHINCHA">Banco Pichincha</option>
+          <option value="GUAYAQUIL">Banco Guayaquil</option>
+          <option value="INTERNACIONAL">Banco Internacional</option>
+          <option value="PRODUBANCO">Banco Produbanco</option>
+          <option value="PACIFICO">Banco Pacifico</option>
+        </select>
+        <label style="margin-top:10px;">Numero Cheque:</label>
+        <input type="text" id="mCobroNumeroCheque" placeholder="Ej: 12345678">
+      </div>
+      <div class="fg hidden" id="gTransferencia">
+        <label>Banco:</label>
+        <select id="mCobroBancoTransf">
+          <option value="PICHINCHA">Banco Pichincha</option>
+          <option value="GUAYAQUIL">Banco Guayaquil</option>
+        </select>
+        <label style="margin-top:10px;">Numero Comprobante:</label>
+        <input type="text" id="mCobroComprobante" placeholder="Ej: 987654321">
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="guardarCobro()">GUARDAR</button>
+        <button class="btn btn-secondary" onclick="cerrarModal('modalCobro')">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalCierre" class="modal">
+  <div class="modal-content" style="max-height:95vh;">
+    <div class="modal-hdr">
+      <h3>Resumen de Cierre</h3>
+    </div>
+    <div>
+      <div class="resumen" id="resumenContent"></div>
+      <div class="denom-hdr">
+        <h4>Contar Dinero</h4>
+        <button class="btn btn-secondary" style="padding:7px 12px;font-size:12px;" onclick="resetDenom()">Resetear</button>
+      </div>
+      <div class="denom-grid" id="denomGrid"></div>
+      <div class="cnt-box">
+        <h4>Total Contado</h4>
+        <div class="cnt-total" id="cntTotal">$0,00</div>
+        <div class="cnt-cmp">
+          <div><div class="cc-lbl">A Entregar</div><div class="cc-val" id="cntEsperado">$0,00</div></div>
+          <div><div class="cc-lbl">Contado</div><div class="cc-val" id="cntContado">$0,00</div></div>
+          <div class="cc-dif" id="cntDif">-</div>
+        </div>
+      </div>
+      <div id="alertaCuadre" class="alert alert-warning hidden">
+        Advertencia: el dinero contado difiere del total. Puedes continuar igual.
+      </div>
+      <h4 style="margin:16px 0 9px;font-size:14px;font-weight:800;">Firma de Conformidad</h4>
+      <canvas id="signatureCanvas" width="500" height="150"></canvas>
+      <button class="btn btn-secondary" style="margin-top:6px;" onclick="limpiarFirma()">Limpiar Firma</button>
+      <div class="btn-group" style="margin-top:16px;">
+        <button class="btn btn-success" id="btnConfirmar" style="flex:2;" onclick="confirmarCierre()">ACEPTAR CIERRE</button>
+        <button class="btn btn-secondary" onclick="cerrarModal('modalCierre')">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+/* ============================================================
+   NAVEGACIÓN — tab switcher principal
+   PRECARGA: iframes tienen src hardcodeado en el HTML,
+   empiezan a cargar junto con la página sin esperar nada
+============================================================ */
+var _activeTab = 'cierre';
+
+function iframeLoaded(loadingId) {
+  var el = document.getElementById(loadingId);
+  if (el) el.classList.add('gone');
+}
+
+function switchTab(tab) {
+  if (_activeTab === tab) return;
+  _activeTab = tab;
+
+  /* ocultar todos los paneles */
+  ['panelRuta','panelCierre','panelRetiro'].forEach(function(id){
+    document.getElementById(id).classList.remove('visible');
+    document.getElementById(id).classList.add('hidden');
+  });
+  /* activar panel seleccionado */
+  document.getElementById('panel' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+  document.getElementById('panel' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('visible');
+
+  /* nav buttons */
+  document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('nav-' + tab).classList.add('active');
+
+  /* scroll Cierre al top al volver */
+  if (tab === 'cierre') {
+    document.getElementById('panelCierre').scrollTop = 0;
+  }
+}
+
+/* Registrar botones nav con touchstart (sin delay 300ms) */
+['ruta','cierre','retiro'].forEach(function(tab) {
+  var btn = document.getElementById('nav-' + tab);
+  if (!btn) return;
+  btn.addEventListener('touchstart', function(e){
+    e.preventDefault();
+    btn.classList.add('pressing');
+    switchTab(tab);
+  }, { passive: false });
+  btn.addEventListener('touchend',    function(){ btn.classList.remove('pressing'); }, { passive:true });
+  btn.addEventListener('touchcancel', function(){ btn.classList.remove('pressing'); }, { passive:true });
+  btn.addEventListener('click', function(){ switchTab(tab); });
+});
+
+/* ============================================================
+   CIERRE — toda la lógica original
+============================================================ */
+var DENOMS = [
+  {id:'100',  lbl:'$100',  val:100  },
+  {id:'50',   lbl:'$50',   val:50   },
+  {id:'20',   lbl:'$20',   val:20   },
+  {id:'10',   lbl:'$10',   val:10   },
+  {id:'5',    lbl:'$5',    val:5    },
+  {id:'1',    lbl:'$1',    val:1    },
+  {id:'1_00', lbl:'$1,00', val:1    },
+  {id:'0_50', lbl:'$0,50', val:0.50 },
+  {id:'0_25', lbl:'$0,25', val:0.25 },
+  {id:'0_10', lbl:'$0,10', val:0.10 },
+  {id:'0_05', lbl:'$0,05', val:0.05 },
+  {id:'0_01', lbl:'$0,01', val:0.01 }
+];
+var CNT = {};
+DENOMS.forEach(function(d){ CNT[d.id] = 0; });
+
+var COLORES = {
+  ROSADO:'#e91e8c', AZUL:'#2962ff', VERDE:'#00a844',
+  AMARILLO:'#ffd600', NARANJA:'#ff6d00', BLANCO:'#eceff1'
+};
+
+var SD = {
+  color:'', ruta:'', usuario:'', token:'',
+  facturas:[], egresos:[], cobros:[],
+  fActual:null, cActual:null,
+  resumen:null, camion:null
+};
+
+var isDrawing = false;
+var autoTimer = null;
+
+function fmt(v) {
+  var n = parseFloat(v);
+  if (isNaN(n)) return '$0,00';
+  return '$' + n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+function mostrarPaso(id) {
+  document.querySelectorAll('.step').forEach(function(s){ s.classList.add('hidden'); });
+  document.getElementById(id).classList.remove('hidden');
+}
+function abrirModal(id)  { document.getElementById(id).classList.add('active'); }
+function cerrarModal(id) {
+  if (document.activeElement && typeof document.activeElement.blur === 'function') {
+    document.activeElement.blur();
+  }
+  document.getElementById(id).classList.remove('active');
+}
+function err(e) {
+  var msg = e && e.message || e;
+  console.error(e);
+  alert('Error: ' + msg);
+  if (String(msg).indexOf('Sesión') !== -1) location.reload();
+}
+
+// Aviso breve NO bloqueante (a diferencia de alert, no interrumpe al chofer).
+function toast(msg, ms) {
+  var t = document.getElementById('_toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = '_toast';
+    t.style.cssText = 'position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:100000;' +
+      'background:rgba(20,25,40,0.95);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;' +
+      'font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,0.45);max-width:88%;text-align:center;' +
+      'transition:opacity .3s;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._h);
+  t._h = setTimeout(function(){ t.style.opacity = '0'; }, ms || 3000);
+}
+
+function esErrorRed(e) {
+  var m = String((e && e.message) || e || '');
+  return /HTTP 0|NetworkError|network|conexi|timeout|Failed to fetch|ERR_/i.test(m);
+}
+
+// Envía una llamada al servidor con REINTENTOS automáticos ante cortes de
+// red (el famoso "HTTP 0"). Así una entrega/registro NO se pierde ni se
+// "desmarca" por una microcaída de señal: se reintenta en segundo plano.
+// onFalloReal se llama solo si el error NO es de red (p. ej. sesión), o si
+// se agotaron los reintentos.
+function enviarConReintento(metodo, args, onFalloReal, maxIntentos) {
+  maxIntentos = maxIntentos || 8;
+  var intento = 0, avisado = false;
+  function go() {
+    intento++;
+    var r = google.script.run
+      .withSuccessHandler(function(){ if (avisado) toast('✓ Guardado'); })
+      .withFailureHandler(function(e){
+        if (esErrorRed(e)) {
+          if (intento < maxIntentos) {
+            if (!avisado) { avisado = true; toast('Sin señal — guardando en segundo plano…', 3500); }
+            setTimeout(go, Math.min(1000 * intento, 4000) + Math.random() * 600); // espera creciente ACOTADA + jitter: libera el canal en ~15s en vez de ~90s
+          } else {
+            toast('⚠ No se pudo guardar por señal. Se mantiene marcado; reintenta al recargar.', 5000);
+            if (onFalloReal) onFalloReal(e, true);
+          }
+        } else if (onFalloReal) {
+          onFalloReal(e, false);
+        }
+      });
+    r[metodo].apply(r, args);
+  }
+  go();
+}
+
+window.onload = function() {
+  tick(); setInterval(tick, 1000);
+  initFirma();
+  buildDenomGrid();
+};
+
+function tick() {
+  var now = new Date();
+  var ef = document.getElementById('infoFecha');
+  var eh = document.getElementById('infoHora');
+  if (ef) ef.textContent = now.toLocaleDateString('es-EC',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  if (eh) eh.textContent = now.toLocaleTimeString('es-EC');
+}
+
+function buildDenomGrid() {
+  var g = document.getElementById('denomGrid');
+  if (!g) return;
+  g.innerHTML = '';
+  DENOMS.forEach(function(d) {
+    var c = document.createElement('div');
+    c.className = 'd-card';
+    c.id = 'dc_' + d.id;
+    c.innerHTML =
+      '<div class="d-top">' +
+        '<span class="d-lbl">' + d.lbl + '</span>' +
+        '<span class="d-sub" id="ds_' + d.id + '">$0,00</span>' +
+      '</div>' +
+      '<div class="d-row">' +
+        '<button class="d-btn m" onclick="tap(\'' + d.id + '\',-1)">-</button>' +
+        '<div class="d-mid">' +
+          '<span class="d-cnt" id="dc2_' + d.id + '">0</span>' +
+          '<span class="d-units">uds</span>' +
+        '</div>' +
+        '<button class="d-btn p" onclick="tap(\'' + d.id + '\',1)">+</button>' +
+      '</div>';
+    g.appendChild(c);
+  });
+}
+
+function tap(id, delta) {
+  CNT[id] = Math.max(0, (CNT[id]||0) + delta);
+  var d = DENOMS.find(function(x){ return x.id===id; });
+  document.getElementById('dc2_' + id).textContent = CNT[id];
+  document.getElementById('ds_'  + id).textContent = fmt(d.val * CNT[id]);
+  document.getElementById('dc_'  + id).classList.toggle('has', CNT[id] > 0);
+  recalcCnt();
+}
+
+function resetDenom() {
+  DENOMS.forEach(function(d) {
+    CNT[d.id] = 0;
+    var c2 = document.getElementById('dc2_' + d.id);
+    var ds = document.getElementById('ds_'  + d.id);
+    var dc = document.getElementById('dc_'  + d.id);
+    if (c2) c2.textContent = '0';
+    if (ds) ds.textContent = '$0,00';
+    if (dc) dc.classList.remove('has');
+  });
+  recalcCnt();
+}
+
+function recalcCnt() {
+  var total = 0;
+  DENOMS.forEach(function(d){ total += d.val * (CNT[d.id]||0); });
+  document.getElementById('cntTotal').textContent   = fmt(total);
+  document.getElementById('cntContado').textContent = fmt(total);
+  var esp = parseFloat((SD.resumen && SD.resumen.totalGlobal) || 0);
+  document.getElementById('cntEsperado').textContent = fmt(esp);
+  var dif    = total - esp;
+  var divDif = document.getElementById('cntDif');
+  var alerta = document.getElementById('alertaCuadre');
+  var btnConf= document.getElementById('btnConfirmar');
+  if (Math.abs(dif) < 0.01) {
+    divDif.textContent = 'Exacto'; divDif.className = 'cc-dif ok';
+    alerta.classList.add('hidden');
+  } else if (dif < 0) {
+    divDif.textContent = 'Falta ' + fmt(Math.abs(dif)); divDif.className = 'cc-dif low';
+    alerta.classList.remove('hidden');
+  } else {
+    divDif.textContent = 'Sobra ' + fmt(dif); divDif.className = 'cc-dif high';
+    alerta.classList.remove('hidden');
+  }
+  if (btnConf) { btnConf.disabled = false; btnConf.style.opacity = '1'; }
+}
+
+function seleccionarColor(color) {
+  SD.color = color;
+  google.script.run
+    .withSuccessHandler(function(ruta) {
+      SD.ruta = ruta;
+      splash(ruta, color, function(){ mostrarPaso('authSection'); document.getElementById('claveInput').focus(); });
+    })
+    .withFailureHandler(err)
+    .obtenerRutaPorColor(color);
+}
+
+function splash(texto, color, cb) {
+  var fs = document.createElement('div');
+  fs.className = 'fullscreen';
+  fs.style.background = COLORES[color] || '#2962ff';
+  fs.innerHTML = '<h1>' + texto + '</h1>';
+  document.body.appendChild(fs);
+  setTimeout(function() {
+    fs.style.animation = 'fadeOut 0.3s ease forwards';
+    setTimeout(function(){ fs.remove(); cb(); }, 300);
+  }, 1200);
+}
+
+function obtenerDispositivoId() {
+  try {
+    var clave = 'cierre_ruta_dispositivo_id';
+    var id = localStorage.getItem(clave);
+    if (id) return id;
+    var semilla = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random())) +
+      '|' + navigator.userAgent + '|' + screen.width + 'x' + screen.height;
+    var h = 0;
+    for (var i = 0; i < semilla.length; i++) { h = (Math.imul(31, h) + semilla.charCodeAt(i)) | 0; }
+    id = (h >>> 0).toString(16).padStart(8, '0').toUpperCase() + '-' + Math.random().toString(16).slice(2, 10).toUpperCase();
+    localStorage.setItem(clave, id);
+    return id;
+  } catch (e) {
+    return 'SIN-ALMACENAMIENTO';
+  }
+}
+
+function validarClave() {
+  var clave = document.getElementById('claveInput').value.toUpperCase().trim();
+  if (!clave) { alert('Ingresa tu clave'); return; }
+  google.script.run
+    .withSuccessHandler(function(sesion) {
+      if (sesion) {
+        SD.usuario = sesion.nombre;
+        SD.token = sesion.token;
+        splash('Bienvenido\n' + sesion.nombre, SD.color, inicializarSistema);
+      } else {
+        alert('Clave incorrecta.');
+        document.getElementById('claveInput').value = '';
+        document.getElementById('claveInput').focus();
+      }
+    })
+    .withFailureHandler(err)
+    .iniciarSesion(clave, obtenerDispositivoId());
+}
+
+function inicializarSistema() {
+  document.getElementById('infoRuta').textContent        = SD.ruta;
+  document.getElementById('infoColor').textContent       = SD.color;
+  document.getElementById('infoResponsable').textContent = SD.usuario;
+  mostrarPaso('mainSystem');
+  despachoCargado = false;
+  despachoData = null;
+  cerrarNav();
+  cargarFacturas();
+  cargarEgresos();
+  cargarCobrosRuta();
+  autoTimer = setInterval(autoUpdateFacturas, 7000);
+}
+
+function cargarFacturas() {
+  document.getElementById('skeletonFacturas').classList.remove('hidden');
+  document.getElementById('facturasList').classList.add('hidden');
+  google.script.run
+    .withSuccessHandler(function(f) {
+      SD.facturas = f;
+      renderFacturas();
+      document.getElementById('skeletonFacturas').classList.add('hidden');
+      document.getElementById('facturasList').classList.remove('hidden');
+    })
+    .withFailureHandler(function(e) {
+      document.getElementById('skeletonFacturas').classList.add('hidden');
+      document.getElementById('facturasList').classList.remove('hidden');
+      err(e);
+    })
+    .cargarFacturasConBloqueos(SD.token, SD.color);
+}
+
+function autoUpdateFacturas() {
+  google.script.run
+    .withSuccessHandler(function(fNew) {
+      var changed = false;
+      fNew.forEach(function(fn) {
+        var fo = SD.facturas.find(function(x){ return x.fila===fn.fila; });
+        if (fo && fo.bloqueada !== fn.bloqueada) changed = true;
+      });
+      SD.facturas = fNew;
+      if (changed) renderFacturas();
+    })
+    .withFailureHandler(function(){})
+    .cargarFacturasConBloqueos(SD.token, SD.color);
+}
+
+function getBadge(f) {
+  if (f.bloqueada && !f.estadoPago) return '<span class="badge bloq">Bloqueada</span>';
+  if (f.estadoPago === 'PP') return '<span class="badge pp">PAGADO</span>';
+  if (f.estadoPago === 'CC') return '<span class="badge cc">CREDITO</span>';
+  return '<span class="badge pend">PENDIENTE</span>';
+}
+
+function getActions(f) {
+  if (f.bloqueada && !f.estadoPago)
+    return '<span style="font-size:11px;color:#aaa;">En ' + f.bloqueadaPor + '</span>';
+  if (f.estadoPago === 'PP' || f.estadoPago === 'CC')
+    return '<div class="f-actions">' +
+      '<button class="btn-a abono" onclick="abrirAbono(' + f.fila + ')">Abono</button>' +
+      '<button class="btn-a undo"  onclick="deshacerEstado(' + f.fila + ')">X</button>' +
+      '</div>';
+  return '<div class="f-actions">' +
+    '<button class="btn-a pp" onclick="marcarEstado(' + f.fila + ',\'PP\',this)">PAGADO</button>' +
+    '<button class="btn-a cc" onclick="marcarEstado(' + f.fila + ',\'CC\',this)">CREDITO</button>' +
+    '</div>';
+}
+
+function getCardClass(f) {
+  if (f.bloqueada && !f.estadoPago) return 'f-card bloq';
+  if (f.estadoPago === 'PP') return 'f-card pp';
+  if (f.estadoPago === 'CC') return 'f-card cc';
+  return 'f-card';
+}
+
+function renderFacturas() {
+  var scrollEl = document.getElementById('panelCierre');
+  var prevScroll = scrollEl ? scrollEl.scrollTop : 0;
+  var list = document.getElementById('facturasList');
+  list.innerHTML = '';
+  if (!SD.facturas.length) {
+    list.innerHTML = '<p style="text-align:center;color:#90a4ae;padding:24px;">Sin facturas</p>';
+    if (scrollEl) scrollEl.scrollTop = prevScroll;
+    return;
+  }
+  var frag = document.createDocumentFragment();
+  SD.facturas.forEach(function(f) {
+    var div = document.createElement('div');
+    div.className = getCardClass(f);
+    div.id = 'fc_' + f.fila;
+    var abono = parseFloat(f.valorTransferencia) || 0;
+    div.innerHTML =
+      '<div class="f-top">' +
+        '<div class="f-info">' +
+          '<div class="f-numero">' + f.factura + '</div>' +
+          '<div class="f-cliente">' + f.cliente + '</div>' +
+        '</div>' +
+        '<div class="f-right">' +
+          '<div class="f-valor">' + fmt(f.valor) + '</div>' +
+          (abono > 0 ? '<div class="f-abono">Ab: ' + fmt(abono) + '</div>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="f-bottom">' +
+        '<span id="fbadge_' + f.fila + '">' + getBadge(f) + '</span>' +
+        '<div id="factions_' + f.fila + '" style="flex:1;display:flex;justify-content:flex-end;">' + getActions(f) + '</div>' +
+      '</div>';
+    frag.appendChild(div);
+  });
+  list.appendChild(frag);
+  if (scrollEl) scrollEl.scrollTop = prevScroll;
+}
+
+function refreshCard(fila) {
+  var f = SD.facturas.find(function(x){ return x.fila===fila; });
+  if (!f) return;
+  var card = document.getElementById('fc_' + fila);
+  if (!card) return;
+  card.className = getCardClass(f);
+  document.getElementById('fbadge_'   + fila).innerHTML = getBadge(f);
+  document.getElementById('factions_' + fila).innerHTML = getActions(f);
+}
+
+function marcarEstado(fila, estado, btn) {
+  if (btn && btn.disabled) return;
+  if (btn) btn.disabled = true;
+  var f = SD.facturas.find(function(x){ return x.fila===fila; });
+  if (!f) return;
+  f.estadoPago = estado;
+  refreshCard(fila);
+  google.script.run
+    .withSuccessHandler(function(){})
+    .withFailureHandler(function(e){ alert('Error: '+e.message); cargarFacturas(); })
+    .actualizarSoloEstado(SD.token, SD.color, fila, estado);
+}
+
+function deshacerEstado(fila) {
+  if (!confirm('Deshacer el estado de esta factura?')) return;
+  var f = SD.facturas.find(function(x){ return x.fila===fila; });
+  if (!f) return;
+  f.estadoPago = '';
+  refreshCard(fila);
+  google.script.run
+    .withSuccessHandler(function(){})
+    .withFailureHandler(function(e){ alert('Error: '+e.message); cargarFacturas(); })
+    .actualizarSoloEstado(SD.token, SD.color, fila, '');
+}
+
+function abrirAbono(fila) {
+  var f = SD.facturas.find(function(x){ return x.fila===fila; });
+  if (!f) return;
+  SD.fActual = f;
+  document.getElementById('tituloModalEgreso').textContent = 'Registrar Abono';
+  document.getElementById('bodyEgreso').innerHTML =
+    '<div style="background:#f0f4ff;padding:12px;border-radius:9px;margin-bottom:12px;font-size:14px;">' +
+      '<p><strong>Cliente:</strong> ' + f.cliente + '</p>' +
+      '<p style="margin-top:4px;"><strong>Factura:</strong> ' + f.factura + '</p>' +
+      '<p style="margin-top:4px;"><strong>Valor:</strong> ' + fmt(f.valor) + '</p>' +
+      '<p style="margin-top:4px;"><strong>Abono actual:</strong> <span style="color:#2962ff;font-weight:800;">' + fmt(f.valorTransferencia) + '</span></p>' +
+    '</div>' +
+    '<div class="fg"><label>Valor del Abono:</label>' +
+      '<input type="number" id="inpAbono" step="0.01" min="0" placeholder="0.00" style="font-size:22px;text-align:center;font-weight:800;">' +
+    '</div>' +
+    '<div class="btn-group">' +
+      '<button class="btn btn-success" onclick="guardarAbono()">GUARDAR</button>' +
+      '<button class="btn btn-secondary" onclick="cerrarModal(\'modalEgreso\')">CANCELAR</button>' +
+    '</div>';
+  abrirModal('modalEgreso');
+  setTimeout(function(){ var el=document.getElementById('inpAbono'); if(el) el.focus(); }, 280);
+}
+
+function guardarAbono() {
+  var v = parseFloat(document.getElementById('inpAbono').value);
+  if (!v || v <= 0) { alert('Ingresa un valor valido'); return; }
+  cerrarModal('modalEgreso');
+  google.script.run
+    .withSuccessHandler(function(){ cargarFacturas(); })
+    .withFailureHandler(err)
+    .actualizarSoloAbono(SD.token, SD.color, SD.fActual.fila, v);
+}
+
+function cargarEgresos() {
+  google.script.run
+    .withSuccessHandler(function(e){ SD.egresos=e; renderEgresos(); })
+    .withFailureHandler(err)
+    .cargarEgresos(SD.token, SD.color);
+}
+
+function renderEgresos() {
+  var list = document.getElementById('egresosList');
+  list.innerHTML = '';
+  if (!SD.egresos.length) {
+    list.innerHTML = '<p style="text-align:center;color:#90a4ae;padding:24px;">Sin egresos</p>';
+    return;
+  }
+  SD.egresos.forEach(function(e) {
+    var div = document.createElement('div');
+    div.className = 's-card';
+    div.innerHTML =
+      '<div class="s-left"><div class="s-title">' + e.descripcion + '</div>' +
+      (e.facturaRef ? '<div class="s-sub">Ref: ' + e.facturaRef + '</div>' : '') + '</div>' +
+      '<div class="s-right"><div class="s-valor">' + fmt(e.monto) + '</div></div>';
+    list.appendChild(div);
+  });
+}
+
+function abrirModalEgreso() {
+  document.getElementById('tituloModalEgreso').textContent = 'Nuevo Egreso';
+  document.getElementById('bodyEgreso').innerHTML =
+    '<p style="text-align:center;color:#4a5568;font-weight:700;margin-bottom:12px;">Selecciona el tipo:</p>' +
+    '<div class="et-grid">' +
+      '<button class="et-btn et-gas"  onclick="tipoEgreso(\'GASOLINA\')">' +
+        '<span style="font-size:30px;line-height:1;display:block;margin-bottom:4px;">&#9981;&#65039;</span>Gasolina</button>' +
+      '<button class="et-btn et-alim" onclick="tipoEgreso(\'ALIMENTACION\')">' +
+        '<span style="font-size:30px;line-height:1;display:block;margin-bottom:4px;">&#127869;&#65039;</span>Alimentacion</button>' +
+      '<button class="et-btn et-park" onclick="tipoEgreso(\'PARQUEADERO\')">' +
+        '<span style="font-size:30px;line-height:1;display:block;margin-bottom:4px;">&#127359;&#65039;</span>Parqueadero</button>' +
+      '<button class="et-btn et-desc" onclick="tipoEgreso(\'DESCUENTO\')">' +
+        '<span style="font-size:30px;line-height:1;display:block;margin-bottom:4px;">&#128202;</span>Descuento Factura</button>' +
+      '<button class="et-btn et-noent full" onclick="tipoEgreso(\'NO_ENTREGADA\')">' +
+        '<span style="font-size:30px;line-height:1;display:block;margin-bottom:4px;">&#128683;</span>Factura No Entregada</button>' +
+    '</div>';
+  abrirModal('modalEgreso');
+}
+
+function tipoEgreso(tipo) {
+  var b = document.getElementById('bodyEgreso');
+  var opts = SD.facturas.map(function(f){
+    return '<option value="' + f.fila + '" data-val="' + f.valor + '">' +
+           f.factura + ' - ' + f.cliente + ' - ' + fmt(f.valor) + '</option>';
+  }).join('');
+  if (tipo === 'GASOLINA') {
+    b.innerHTML =
+      '<h4 style="text-align:center;margin-bottom:12px;">Gasolina</h4>' +
+      '<div class="cam-grid"><button class="cam-btn" onclick="elegirCam(\'PCQ4682\',this)">PCQ4682</button><button class="cam-btn" onclick="elegirCam(\'PDY7829\',this)">PDY7829</button><button class="cam-btn" onclick="elegirCam(\'PFO6548\',this)">PFO6548</button></div>' +
+      '<div class="fg"><label>Valor:</label><input type="number" id="egVal" step="0.01" min="0" placeholder="0.00" style="font-size:20px;text-align:center;"></div>' +
+      '<div class="btn-group"><button class="btn btn-success" onclick="saveGas()">GUARDAR</button><button class="btn btn-secondary" onclick="abrirModalEgreso()">VOLVER</button></div>';
+  } else if (tipo === 'ALIMENTACION') {
+    b.innerHTML =
+      '<h4 style="text-align:center;margin-bottom:12px;">Alimentacion</h4>' +
+      '<div class="alim-grid"><button class="alim-btn alim-des" onclick="saveAlim(\'Desayuno\',1.00)"><span class="alim-text">Desayuno</span><span class="alim-price">$1,00</span></button><button class="alim-btn alim-alm" onclick="saveAlim(\'Almuerzo\',2.00)"><span class="alim-text">Almuerzo</span><span class="alim-price">$2,00</span></button></div>' +
+      '<button class="btn btn-secondary" style="width:100%;margin-top:10px;" onclick="abrirModalEgreso()">VOLVER</button>';
+  } else if (tipo === 'PARQUEADERO') {
+    b.innerHTML =
+      '<h4 style="text-align:center;margin-bottom:12px;">Parqueadero - $0,40 fijo</h4>' +
+      '<div class="cam-grid"><button class="cam-btn" onclick="elegirCam(\'PCQ4682\',this)">PCQ4682</button><button class="cam-btn" onclick="elegirCam(\'PDY7829\',this)">PDY7829</button><button class="cam-btn" onclick="elegirCam(\'PFO6548\',this)">PFO6548</button></div>' +
+      '<div class="btn-group"><button class="btn btn-success" onclick="savePark()">GUARDAR $0,40</button><button class="btn btn-secondary" onclick="abrirModalEgreso()">VOLVER</button></div>';
+  } else if (tipo === 'DESCUENTO') {
+    b.innerHTML =
+      '<h4 style="text-align:center;margin-bottom:12px;">Descuento en Factura</h4>' +
+      '<div class="fg"><label>Factura:</label><select id="egFact"><option value="">-- Seleccionar --</option>' + opts + '</select></div>' +
+      '<div class="fg"><label>Valor descuento:</label><input type="number" id="egDescVal" step="0.01" min="0" placeholder="0.00" style="font-size:18px;text-align:center;"></div>' +
+      '<div class="btn-group"><button class="btn btn-success" onclick="saveDesc()">GUARDAR</button><button class="btn btn-secondary" onclick="abrirModalEgreso()">VOLVER</button></div>';
+  } else if (tipo === 'NO_ENTREGADA') {
+    b.innerHTML =
+      '<h4 style="text-align:center;margin-bottom:12px;">Factura No Entregada</h4>' +
+      '<div class="fg"><label>Factura:</label><select id="egFactNE" onchange="updNE()"><option value="">-- Seleccionar --</option>' + opts + '</select></div>' +
+      '<p id="lblNE" style="text-align:center;font-size:18px;color:#d32f2f;font-weight:800;margin:9px 0;"></p>' +
+      '<div class="btn-group"><button class="btn btn-success" onclick="saveNE()">GUARDAR</button><button class="btn btn-secondary" onclick="abrirModalEgreso()">VOLVER</button></div>';
+  }
+}
+
+function elegirCam(placa, btn) {
+  SD.camion = placa;
+  document.querySelectorAll('.cam-btn').forEach(function(b){ b.classList.remove('sel'); });
+  btn.classList.add('sel');
+}
+function updNE() {
+  var s = document.getElementById('egFactNE'), o = s.options[s.selectedIndex];
+  document.getElementById('lblNE').textContent = o.value ? 'Monto: ' + fmt(o.getAttribute('data-val')) : '';
+}
+function saveGas() {
+  if (!SD.camion) { alert('Selecciona un camion'); return; }
+  var v = parseFloat(document.getElementById('egVal').value);
+  if (!v||v<=0) { alert('Valor invalido'); return; }
+  doEgreso('', 'Gasolina - ' + SD.camion, v); SD.camion=null;
+}
+function saveAlim(t,v) { doEgreso('', 'Alimentacion - ' + t, v); }
+function savePark() {
+  if (!SD.camion) { alert('Selecciona un camion'); return; }
+  doEgreso('', 'Parqueadero - ' + SD.camion, 0.40); SD.camion=null;
+}
+function saveDesc() {
+  var s = document.getElementById('egFact'), v = parseFloat(document.getElementById('egDescVal').value);
+  if (!s.value) { alert('Selecciona factura'); return; }
+  if (!v||v<=0) { alert('Valor invalido'); return; }
+  var num = s.options[s.selectedIndex].text.split(' - ')[0];
+  doEgreso(num, 'Descuento Factura ' + num, v);
+}
+function saveNE() {
+  var s = document.getElementById('egFactNE');
+  if (!s.value) { alert('Selecciona factura'); return; }
+  var o = s.options[s.selectedIndex], num = o.text.split(' - ')[0];
+  doEgreso(num, 'Factura No Entregada ' + num, parseFloat(o.getAttribute('data-val')));
+}
+function doEgreso(ref, desc, monto) {
+  cerrarModal('modalEgreso');
+  google.script.run
+    .withSuccessHandler(function(){ cargarEgresos(); })
+    .withFailureHandler(err)
+    .registrarEgreso(SD.token, SD.color, ref, desc, monto);
+}
+
+function cargarCobrosRuta() {
+  google.script.run
+    .withSuccessHandler(function(c){ SD.cobros=c; renderCobros(); })
+    .withFailureHandler(err)
+    .cargarCobrosRuta(SD.token, SD.ruta);
+}
+
+function renderCobros() {
+  var list = document.getElementById('cobrosList');
+  list.innerHTML = '';
+  if (!SD.cobros.length) {
+    list.innerHTML = '<p style="text-align:center;color:#90a4ae;padding:24px;">Sin cobros</p>';
+    return;
+  }
+  SD.cobros.forEach(function(c) {
+    var div = document.createElement('div');
+    div.className = 's-card';
+    div.innerHTML =
+      '<div class="s-left"><div class="s-title">' + c.cliente + '</div><div class="s-sub">' + c.factura + '</div></div>' +
+      '<div class="s-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:7px;">' +
+        '<div class="s-valor">' + fmt(c.valor) + '</div>' +
+        '<button class="btn btn-primary" style="padding:9px 14px;font-size:13px;min-height:40px;" onclick="abrirModalCobro(' + c.fila + ')">Cobrar</button>' +
+      '</div>';
+    list.appendChild(div);
+  });
+}
+
+function abrirModalCobro(fila) {
+  var c = SD.cobros.find(function(x){ return x.fila===fila; });
+  if (!c) return;
+  SD.cActual = c;
+  document.getElementById('mCobroCliente').textContent = c.cliente;
+  document.getElementById('mCobroNumero').textContent  = c.factura;
+  document.getElementById('mCobroValor').textContent   = parseFloat(c.valor).toFixed(2);
+  ['mCobroTipo','mCobroValorCobrado','mCobroFormaPago','mCobroNumeroCheque','mCobroComprobante']
+    .forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  ['gValorCobro','gFormaPago','gCheque','gTransferencia']
+    .forEach(function(id){ document.getElementById(id).classList.add('hidden'); });
+  abrirModal('modalCobro');
+}
+function cambiarTipoCobro() {
+  var tipo = document.getElementById('mCobroTipo').value;
+  ['gValorCobro','gFormaPago','gCheque','gTransferencia']
+    .forEach(function(id){ document.getElementById(id).classList.add('hidden'); });
+  if (tipo==='TOTAL') {
+    document.getElementById('mCobroValorCobrado').value = SD.cActual.valor;
+    document.getElementById('gValorCobro').classList.remove('hidden');
+    document.getElementById('gFormaPago').classList.remove('hidden');
+  } else if (tipo==='PARCIAL') {
+    document.getElementById('gValorCobro').classList.remove('hidden');
+    document.getElementById('gFormaPago').classList.remove('hidden');
+  }
+}
+function cambiarFormaPago() {
+  var fp = document.getElementById('mCobroFormaPago').value;
+  document.getElementById('gCheque').classList.toggle('hidden', fp!=='CHEQUE');
+  document.getElementById('gTransferencia').classList.toggle('hidden', fp!=='TRANSFERENCIA');
+}
+function guardarCobro() {
+  var tipo = document.getElementById('mCobroTipo').value;
+  if (!tipo) { alert('Selecciona tipo de cobro'); return; }
+  var valorCobrado, formaPago, detallesPago = null;
+  if (tipo==='NO_COBRADO') { valorCobrado='NO COBRADO'; formaPago=''; }
+  else {
+    valorCobrado = parseFloat(document.getElementById('mCobroValorCobrado').value);
+    formaPago    = document.getElementById('mCobroFormaPago').value;
+    if (!valorCobrado||valorCobrado<=0) { alert('Valor invalido'); return; }
+    if (!formaPago) { alert('Selecciona forma de pago'); return; }
+    if (formaPago==='CHEQUE') {
+      var num = document.getElementById('mCobroNumeroCheque').value;
+      if (!num) { alert('Ingresa numero de cheque'); return; }
+      detallesPago = { banco: document.getElementById('mCobroBancoCheque').value, numero: num };
+    } else if (formaPago==='TRANSFERENCIA') {
+      var comp = document.getElementById('mCobroComprobante').value;
+      if (!comp) { alert('Ingresa numero de comprobante'); return; }
+      detallesPago = { banco: document.getElementById('mCobroBancoTransf').value, comprobante: comp };
+    }
+  }
+  cerrarModal('modalCobro');
+  google.script.run
+    .withSuccessHandler(function(){ cargarCobrosRuta(); })
+    .withFailureHandler(err)
+    .registrarCobroRuta(SD.token, SD.cActual.fila, valorCobrado, formaPago, SD.color, detallesPago);
+}
+
+function validarYCerrar() {
+  var sinEstado = SD.facturas.filter(function(f){ return !f.estadoPago && !f.bloqueada; });
+  if (sinEstado.length > 0) { alert('Faltan ' + sinEstado.length + ' factura(s) sin registrar (PP o CC).'); return; }
+  var btnCerrar = document.querySelector('.btn-cerrar');
+  if (btnCerrar) { btnCerrar.disabled = true; btnCerrar.textContent = 'Validando facturas...'; btnCerrar.style.background = 'linear-gradient(135deg,#37474f,#263238)'; }
+  function restaurarCerrar() {
+    if (btnCerrar) { btnCerrar.disabled = false; btnCerrar.textContent = 'CERRAR RUTA'; btnCerrar.style.background = 'linear-gradient(135deg,#c62828,#b71c1c)'; }
+  }
+  // Watchdog: si la red está lenta (envíos en segundo plano ocupando el
+  // canal), el botón se libera solo y el chofer puede reintentar, en vez de
+  // quedarse "colgado" indefinidamente.
+  var cerrarResuelto = false;
+  var cerrarWatchdog = setTimeout(function(){
+    if (cerrarResuelto) return;
+    cerrarResuelto = true;
+    restaurarCerrar();
+    toast('La red está lenta. Toca CERRAR RUTA otra vez.', 5000);
+  }, 25000);
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (cerrarResuelto) return;
+      cerrarResuelto = true; clearTimeout(cerrarWatchdog);
+      restaurarCerrar();
+      if (!result.valido) {
+        var msg = '';
+        if (result.duplicadas.length)
+          msg += '<div class="alert alert-danger"><strong>Duplicadas:</strong><ul>' +
+            result.duplicadas.map(function(f){ return '<li>'+f.factura+' - '+f.cliente+'</li>'; }).join('') + '</ul></div>';
+        if (result.sinRegistrar.length)
+          msg += '<div class="alert alert-warning"><strong>Sin registrar:</strong><ul>' +
+            result.sinRegistrar.map(function(f){ return '<li>'+f.factura+' - '+f.cliente+'</li>'; }).join('') + '</ul></div>';
+        var m = document.createElement('div');
+        m.className = 'modal active';
+        m.innerHTML = '<div class="modal-content"><div class="modal-hdr"><h3>Error de Validacion</h3></div><div>' +
+          msg + '<button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="this.closest(\'.modal\').remove()">ENTENDIDO</button></div></div>';
+        document.body.appendChild(m);
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function(resumen){ SD.resumen = resumen; mostrarResumen(resumen); })
+        .withFailureHandler(err)
+        .calcularResumenCierre(SD.token, SD.color, SD.ruta);
+    })
+    .withFailureHandler(function(e) {
+      if (cerrarResuelto) return;
+      cerrarResuelto = true; clearTimeout(cerrarWatchdog);
+      restaurarCerrar();
+      err(e);
+    })
+    .validarCierreCruzado(SD.token, SD.color);
+}
+
+function mostrarResumen(r) {
+  document.getElementById('resumenContent').innerHTML =
+    '<div class="r-item"><span>Facturas PP:</span><strong>' + r.facturasEntregadas + '</strong></div>' +
+    '<div class="r-item"><span>Facturas CC:</span><strong>' + r.facturasCredito + '</strong></div>' +
+    '<div class="r-item"><span>Monto PP:</span><strong>' + fmt(r.montoFacturasEntregadas) + '</strong></div>' +
+    '<div class="r-item"><span>Abonos:</span><strong>' + fmt(r.montoAbonos) + '</strong></div>' +
+    '<div class="r-item"><span>Cobros Ruta:</span><strong>' + fmt(r.montoCobrosRuta) + '</strong></div>' +
+    '<div class="r-item"><span>Egresos:</span><strong style="color:#d32f2f;">-' + fmt(r.totalEgresos) + '</strong></div>' +
+    '<div class="r-item total"><span>TOTAL A ENTREGAR:</span><span>' + fmt(r.totalGlobal) + '</span></div>';
+  resetDenom();
+  var btn = document.getElementById('btnConfirmar');
+  btn.disabled = false; btn.style.opacity = '1';
+  limpiarFirma();
+  abrirModal('modalCierre');
+}
+
+function confirmarCierre() {
+  var canvas = document.getElementById('signatureCanvas');
+  var data   = canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+  var hasFirma = false;
+  for (var i=3;i<data.length;i+=4){ if(data[i]>0){hasFirma=true;break;} }
+  if (!hasFirma) { alert('Firma el documento de conformidad'); return; }
+  var dObj = {};
+  DENOMS.forEach(function(d){ dObj[d.id] = CNT[d.id]||0; });
+  var firma = canvas.toDataURL('image/png');
+  if (autoTimer) clearInterval(autoTimer);
+
+  // Feedback inmediato: el botón reacciona al instante y no parece "colgado".
+  var btn = document.getElementById('btnConfirmar');
+  if (btn) {
+    if (btn.disabled) return;                 // evita doble envío si tocan dos veces
+    btn.dataset.txt = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Procesando cierre…';
+    btn.style.opacity = '0.7';
+  }
+  function restaurarBtnCierre() {
+    if (btn) { btn.disabled = false; btn.textContent = btn.dataset.txt || 'ACEPTAR CIERRE'; btn.style.opacity = '1'; }
+  }
+
+  google.script.run
+    .withSuccessHandler(function(){
+      cerrarModal('modalCierre');
+      alert('Cierre completado. Correo enviado a bodega.yes@gmail.com');
+      setTimeout(function(){ location.reload(); }, 1500);
+    })
+    .withFailureHandler(function(e){
+      restaurarBtnCierre();                    // se puede reintentar sin recargar
+      err(e);
+    })
+    .finalizarCierre(SD.token, SD.color, SD.ruta, SD.usuario, SD.resumen, dObj, firma);
+}
+
+function initFirma() {
+  var canvas = document.getElementById('signatureCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  ctx.lineWidth = 2.5; ctx.strokeStyle = '#1a1f35'; ctx.lineCap = 'round';
+  function gp(e) {
+    var r = canvas.getBoundingClientRect();
+    var sx = canvas.width/r.width, sy = canvas.height/r.height;
+    if (e.touches) return {x:(e.touches[0].clientX-r.left)*sx, y:(e.touches[0].clientY-r.top)*sy};
+    return {x:(e.clientX-r.left)*sx, y:(e.clientY-r.top)*sy};
+  }
+  canvas.addEventListener('mousedown',  function(e){isDrawing=true; var p=gp(e); ctx.beginPath(); ctx.moveTo(p.x,p.y);});
+  canvas.addEventListener('mousemove',  function(e){if(!isDrawing)return; var p=gp(e); ctx.lineTo(p.x,p.y); ctx.stroke();});
+  canvas.addEventListener('mouseup',    function(){isDrawing=false;});
+  canvas.addEventListener('mouseleave', function(){isDrawing=false;});
+  canvas.addEventListener('touchstart', function(e){e.preventDefault();isDrawing=true; var p=gp(e); ctx.beginPath(); ctx.moveTo(p.x,p.y);},{passive:false});
+  canvas.addEventListener('touchmove',  function(e){e.preventDefault();if(!isDrawing)return; var p=gp(e); ctx.lineTo(p.x,p.y); ctx.stroke();},{passive:false});
+  canvas.addEventListener('touchend',   function(){isDrawing=false;});
+}
+
+function limpiarFirma() {
+  var c = document.getElementById('signatureCanvas');
+  if (c) c.getContext('2d').clearRect(0,0,c.width,c.height);
+}
+
+function cambiarTab(tab, event) {
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.tab-content').forEach(function(tc){ tc.classList.remove('active'); });
+  event.target.classList.add('active');
+  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+  if (tab === 'despacho') cargarDespacho();
+}
+
+// ============================================================
+// DESPACHO — mapa y orden de entrega por cercanía a la bodega
+// ============================================================
+
+var despachoMapa = null;
+var despachoMapaListo = false;
+var despachoCargado = false;
+var despachoData = null;
+var despachoMiUbicacionMarker = null;
+var despachoWatchId = null;
+var despachoNavActiva = null;
+var despachoUltimoFetchNav = 0;
+var despachoMarcadores = {};
+var despachoSeguimiento = true;
+var despachoBearing = 0;
+var despachoUltimaPos = null;
+var despachoHaLlegado = false;
+
+function cargarDespacho() {
+  if (despachoCargado) return;
+  despachoCargado = true;
+  google.script.run
+    .withSuccessHandler(renderDespacho)
+    .withFailureHandler(function(e) {
+      despachoCargado = false;
+      document.getElementById('despachoEstado').textContent = 'Error: ' + (e.message || e);
+      err(e);
+    })
+    .cargarDespacho(SD.token, SD.color);
+}
+
+function renderDespacho(data) {
+  despachoData = data;
+  var estado = document.getElementById('despachoEstado');
+  var paradasDiv = document.getElementById('despachoParadas');
+  var sinUbiWrap = document.getElementById('despachoSinUbicacionWrap');
+  var sinUbiDiv  = document.getElementById('despachoSinUbicacion');
+
+  if (!data.paradas.length && !data.sinUbicacion.length) {
+    estado.textContent = 'No hay facturas pendientes por entregar.';
+    document.querySelector('.dp-progreso').classList.add('hidden');
+    return;
+  }
+  estado.classList.add('hidden');
+
+  paradasDiv.innerHTML = '';
+  data.paradas.forEach(function(p) {
+    paradasDiv.appendChild(crearParadaCard(p));
+  });
+
+  inicializarMapaDespacho(data);
+
+  if (data.sinUbicacion.length) {
+    sinUbiWrap.classList.remove('hidden');
+    sinUbiDiv.innerHTML = '';
+    data.sinUbicacion.forEach(function(f) {
+      var card = document.createElement('div');
+      card.id = 'parada_' + f.fila;
+      card.className = 'parada-card sin-ubi' + (f.entregado ? ' entregado' : '');
+      card.innerHTML =
+        '<div class="parada-num">·</div>' +
+        '<div class="parada-info">' +
+          '<div class="parada-cliente">' + f.cliente + '</div>' +
+          '<div class="parada-sub">' + f.factura + ' · ' + fmt(f.valor) + ' · sin ubicación</div>' +
+        '</div>' +
+        '<button class="btn-marcar-directo' + (f.entregado ? ' on' : '') + '" onclick="toggleEntregaDirecta(' + f.fila + ',\'' + escapeAttr(f.cliente) + '\',\'' + escapeAttr(f.factura) + '\',this)">' + (f.entregado ? '✓ Entregado' : 'Marcar') + '</button>';
+      sinUbiDiv.appendChild(card);
+    });
+  } else {
+    sinUbiWrap.classList.add('hidden');
+  }
+
+  actualizarProgreso();
+  actualizarBotonIniciar();
+}
+
+function escapeAttr(s) { return String(s).replace(/'/g, "\\'"); }
+
+// ---- Mapa (MapLibre GL, vista de navegación que rota como Google Maps/Waze) ----
+
+var ESTILO_CARTO_LIGHT_RASTER = {
+  version: 8,
+  sources: {
+    'carto-light': {
+      type: 'raster',
+      tiles: [
+        'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        'https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+      ],
+      tileSize: 256,
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    }
+  },
+  layers: [
+    { id: 'carto-light-layer', type: 'raster', source: 'carto-light', minzoom: 0, maxzoom: 20 }
+  ]
+};
+var despachoFalloEstilo = false;
+
+function inicializarMapaDespacho(data) {
+  if (!despachoMapa) {
+    despachoMapa = new maplibregl.Map({
+      container: 'despachoMap',
+      style: 'https://tiles.openfreemap.org/styles/positron',
+      center: [data.bodega.lng, data.bodega.lat],
+      zoom: 12,
+      attributionControl: false
+    });
+    despachoMapa.on('dragstart', function() {
+      if (despachoNavActiva === null) return;
+      pausarSeguimientoUsuario();
+    });
+    despachoMapa.on('zoomstart', function(e) {
+      // Solo el zoom hecho por el chofer con los dedos (originalEvent);
+      // el zoom de la cámara de seguimiento es programático y se ignora.
+      if (despachoNavActiva === null || !e || !e.originalEvent) return;
+      pausarSeguimientoUsuario();
+    });
+    despachoMapa.getContainer().addEventListener('touchend', function() {
+      if (despachoNavActiva === null || despachoSeguimiento) return;
+      programarReanudar();
+    }, { passive: true });
+    despachoMapa.on('error', function(ev) {
+      if (despachoFalloEstilo || despachoMapaListo) return;
+      despachoFalloEstilo = true;
+      despachoMapa.setStyle(ESTILO_CARTO_LIGHT_RASTER);
+    });
+    var completarInit = function() {
+      if (despachoMapaListo) return;
+      despachoMapaListo = true;
+      ocultarEtiquetasSendero();
+      dibujarCapasYParadas(data);
+    };
+    despachoMapa.on('load', completarInit);
+    despachoMapa.on('idle', completarInit);
+  } else if (despachoMapaListo) {
+    dibujarCapasYParadas(data);
+  }
+}
+
+function ocultarEtiquetasSendero() {
+  try {
+    if (despachoMapa.getLayer('highway-name-path')) {
+      despachoMapa.setLayoutProperty('highway-name-path', 'visibility', 'none');
+    }
+  } catch (e) { /* estilo distinto sin esta capa, no pasa nada */ }
+}
+
+function dibujarCapasYParadas(data) {
+  var bounds = new maplibregl.LngLatBounds();
+
+  var elBodega = document.createElement('div');
+  elBodega.style.cssText = 'background:#c62828;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 1px 4px rgba(0,0,0,0.4);';
+  elBodega.textContent = '🏭';
+  new maplibregl.Marker({ element: elBodega, anchor: 'center' }).setLngLat([data.bodega.lng, data.bodega.lat]).addTo(despachoMapa);
+  bounds.extend([data.bodega.lng, data.bodega.lat]);
+
+  var coordsPlan = [[data.bodega.lng, data.bodega.lat]];
+  data.paradas.forEach(function(p) {
+    var el = crearElementoParada(p, false);
+    var marker = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([p.lng, p.lat]).addTo(despachoMapa);
+    marker.setPopup(new maplibregl.Popup({ offset: 14, closeButton: false }).setText(p.orden + '. ' + p.cliente));
+    despachoMarcadores[p.fila] = marker;
+    coordsPlan.push([p.lng, p.lat]);
+    bounds.extend([p.lng, p.lat]);
+  });
+
+  despachoMapa.addSource('ruta-plan', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: coordsPlan } } });
+  despachoMapa.addLayer({ id: 'ruta-plan-line', type: 'line', source: 'ruta-plan', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#2962ff', 'line-width': 3, 'line-opacity': 0.55, 'line-dasharray': [2, 2] } });
+
+  despachoMapa.addSource('ruta-nav', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } } });
+  // Ruta tipo Waze/Google: borde de contraste + línea azul + capa de "flujo"
+  // animada que se desplaza para que la ruta se vea viva, no un trazo plano.
+  despachoMapa.addLayer({ id: 'ruta-nav-casing', type: 'line', source: 'ruta-nav', layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'none' }, paint: { 'line-color': '#0b3ea8', 'line-width': 11, 'line-opacity': 0.9 } });
+  despachoMapa.addLayer({ id: 'ruta-nav-line', type: 'line', source: 'ruta-nav', layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'none' }, paint: { 'line-color': '#2b7cff', 'line-width': 7 } });
+  despachoMapa.addLayer({ id: 'ruta-nav-flow', type: 'line', source: 'ruta-nav', layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'none' }, paint: { 'line-color': '#cfe1ff', 'line-width': 7, 'line-opacity': 0.6, 'line-dasharray': [0, 4, 3] } });
+
+  if (coordsPlan.length > 1) despachoMapa.fitBounds(bounds, { padding: 40, duration: 0 });
+}
+
+function crearElementoParada(p, activo) {
+  var el = document.createElement('div');
+  var color = p.entregado ? '#00a844' : (activo ? '#ff6d00' : '#2962ff');
+  var size = activo ? 32 : 26;
+  el.style.cssText = 'background:' + color + ';color:white;border-radius:50%;width:' + size + 'px;height:' + size + 'px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:' + (activo ? 15 : 13) + 'px;box-shadow:0 2px 6px rgba(0,0,0,0.45);' + (activo ? 'border:3px solid white;' : '');
+  el.textContent = p.entregado ? '✓' : p.orden;
+  return el;
+}
+
+function actualizarIconoParada(fila, p, activo) {
+  var marker = despachoMarcadores[fila];
+  if (!marker) return;
+  var el = marker.getElement();
+  var color = p.entregado ? '#00a844' : (activo ? '#ff6d00' : '#2962ff');
+  var size = activo ? 32 : 26;
+  el.style.background = color;
+  el.style.width = size + 'px';
+  el.style.height = size + 'px';
+  el.style.fontSize = (activo ? 15 : 13) + 'px';
+  el.style.border = activo ? '3px solid white' : 'none';
+  el.textContent = p.entregado ? '✓' : p.orden;
+}
+
+function crearElementoChevron() {
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'position:relative;width:24px;height:24px;';
+  wrap.innerHTML =
+    '<div style="position:absolute;top:-1px;left:-1px;width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:23px solid white;"></div>' +
+    '<div style="position:absolute;top:1px;left:1px;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:19px solid #1a73e8;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.5));"></div>';
+  return wrap;
+}
+
+function svgFlecha(deg) {
+  return '<svg width="22" height="22" viewBox="0 0 24 24" style="transform:rotate(' + deg + 'deg);"><path d="M12 2 L12 17 M12 2 L6 8.5 M12 2 L18 8.5" stroke="white" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+function gradosManiobra(m) {
+  if (!m) return 0;
+  var mapa = { 'straight': 0, 'slight right': 30, 'right': 90, 'sharp right': 135, 'slight left': -30, 'left': -90, 'sharp left': -135, 'uturn': 180 };
+  var mod = m.modifier || 'straight';
+  return mapa[mod] !== undefined ? mapa[mod] : 0;
+}
+
+function calcularRumbo(lat1, lng1, lat2, lng2) {
+  var toRad = Math.PI / 180, toDeg = 180 / Math.PI;
+  var dLng = (lng2 - lng1) * toRad;
+  var y = Math.sin(dLng) * Math.cos(lat2 * toRad);
+  var x = Math.cos(lat1 * toRad) * Math.sin(lat2 * toRad) - Math.sin(lat1 * toRad) * Math.cos(lat2 * toRad) * Math.cos(dLng);
+  return (Math.atan2(y, x) * toDeg + 360) % 360;
+}
+
+function distanciaMetros(lat1, lng1, lat2, lng2) {
+  var R = 6371000, toRad = Math.PI / 180;
+  var dLat = (lat2 - lat1) * toRad, dLng = (lng2 - lng1) * toRad;
+  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function actualizarEstadoLlegada(llegado) {
+  if (llegado === despachoHaLlegado) return;
+  despachoHaLlegado = llegado;
+  var btn = document.getElementById('btnEntregarGrande');
+  if (!btn) return;
+  btn.classList.toggle('llegada', llegado);
+  var lbl = document.getElementById('fabEntregarLbl');
+  if (lbl) lbl.textContent = llegado ? '¡Entregar!' : 'Entregar';
+}
+
+function formatHora(d) {
+  var h = d.getHours(), m = d.getMinutes();
+  var ampm = h >= 12 ? 'p.m.' : 'a.m.';
+  var h12 = h % 12; if (h12 === 0) h12 = 12;
+  return h12 + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+}
+
+// Desplaza el punto seguido (mi ubicación) hacia la parte baja de la
+// pantalla para dar más visión hacia adelante, como Google Maps / Waze.
+// offset positivo en Y = el centro (mi flecha) se dibuja más abajo.
+function offsetSeguimiento() {
+  var h = (despachoMapa && despachoMapa.getContainer) ? despachoMapa.getContainer().clientHeight : 0;
+  return [0, Math.round(h * 0.22)];
+}
+
+var despachoResumeTimer = null;
+
+// Reanuda el seguimiento solo tras unos segundos sin que el chofer toque
+// el mapa, para que un roce accidental (bache, curva) no lo deje fijo.
+function programarReanudar() {
+  if (despachoResumeTimer) clearTimeout(despachoResumeTimer);
+  despachoResumeTimer = setTimeout(function() {
+    if (despachoNavActiva !== null && !despachoSeguimiento) centrarMapa();
+  }, 9000);
+}
+
+function pausarSeguimientoUsuario() {
+  if (despachoNavActiva === null) return;
+  despachoSeguimiento = false;
+  document.getElementById('btnCentrar').classList.remove('hidden');
+  programarReanudar();
+}
+
+function centrarMapa() {
+  despachoSeguimiento = true;
+  if (despachoResumeTimer) { clearTimeout(despachoResumeTimer); despachoResumeTimer = null; }
+  document.getElementById('btnCentrar').classList.add('hidden');
+  if (despachoMiUbicacionMarker && despachoMapa) {
+    var ll = despachoMiUbicacionMarker.getLngLat();
+    despachoMapa.easeTo({ center: [ll.lng, ll.lat], bearing: despachoBearing, zoom: 18, offset: offsetSeguimiento(), duration: 600 });
+  }
+}
+
+function crearParadaCard(p) {
+  var card = document.createElement('div');
+  card.id = 'parada_' + p.fila;
+  card.className = 'parada-card' + (p.entregado ? ' entregado' : '') + (p.pospuesto ? ' pospuesto' : '');
+  // Si está entregada o reagendada/incidencia, se muestra "Reabrir" para
+  // devolverla a pendiente (p. ej. si se marcó por error).
+  var reseteable = p.entregado || p.pospuesto;
+  var lblReabrir = p.entregado ? '↺ Reabrir' : '↺ Reactivar';
+  var derecha = reseteable
+    ? '<button class="btn-reabrir" onclick="reabrirParada(' + p.fila + ',\'' + escapeAttr(p.cliente) + '\',\'' + escapeAttr(p.factura) + '\',event)">' + lblReabrir + '</button>'
+    : '<div class="parada-chevron">›</div>';
+  card.innerHTML =
+    '<div class="parada-num">' + (p.entregado ? '✓' : p.orden) + '</div>' +
+    '<div class="parada-info">' +
+      '<div class="parada-cliente">' + p.cliente + '</div>' +
+      '<div class="parada-sub">' + p.factura + ' · ' + fmt(p.valor) + ' · ' + p.distanciaKm.toFixed(1) + ' km' + (p.pospuesto ? ' · pospuesto' : '') + '</div>' +
+    '</div>' + derecha;
+  card.onclick = function() { if (!p.entregado) activarNavHaciaParada(p); };
+  return card;
+}
+
+// Devuelve una parada entregada o reagendada/incidencia a PENDIENTE.
+function reabrirParada(fila, cliente, factura, ev) {
+  if (ev) ev.stopPropagation();
+  if (!confirm('¿Reabrir esta parada? Volverá a quedar como PENDIENTE.')) return;
+  var todas = despachoData.paradas.concat(despachoData.sinUbicacion);
+  var p = todas.find(function(x){ return x.fila === fila; });
+  if (!p) return;
+  var prevEnt = p.entregado, prevPos = p.pospuesto;
+  p.entregado = false;
+  p.pospuesto = false;
+  var card = document.getElementById('parada_' + fila);
+  if (card && card.parentNode) card.parentNode.replaceChild(crearParadaCard(p), card);
+  if (despachoMarcadores[fila]) actualizarIconoParada(fila, p, false);
+  actualizarProgreso();
+  actualizarBotonIniciar();
+  enviarConReintento('registrarEntrega',
+    [SD.token, SD.color, SD.ruta, fila, cliente, factura, false],
+    function(e, red) {
+      if (red) return; // corte de red: se reintenta solo, no se revierte
+      p.entregado = prevEnt;
+      p.pospuesto = prevPos;
+      var c2 = document.getElementById('parada_' + fila);
+      if (c2 && c2.parentNode) c2.parentNode.replaceChild(crearParadaCard(p), c2);
+      if (despachoMarcadores[fila]) actualizarIconoParada(fila, p, false);
+      actualizarProgreso();
+      actualizarBotonIniciar();
+      err(e);
+    });
+}
+
+function actualizarProgreso() {
+  if (!despachoData) return;
+  var todas = despachoData.paradas.concat(despachoData.sinUbicacion);
+  var total = todas.length;
+  var hechas = todas.filter(function(p){ return p.entregado; }).length;
+  var pct = total ? Math.round(hechas / total * 100) : 0;
+  document.getElementById('dpCount').textContent = hechas + ' / ' + total;
+  document.getElementById('dpFill').style.width = pct + '%';
+  var sub = document.getElementById('dpSub');
+  if (total === 0) {
+    sub.textContent = 'Sin entregas pendientes.';
+  } else if (hechas === total) {
+    sub.textContent = '🎉 ¡Todas las entregas completadas!';
+    sub.classList.add('done');
+  } else {
+    sub.classList.remove('done');
+    var faltan = total - hechas;
+    sub.textContent = pct + '% completado — ' + faltan + (faltan === 1 ? ' entrega pendiente' : ' entregas pendientes');
+  }
+}
+
+function actualizarBotonIniciar() {
+  var btn = document.getElementById('btnIniciarRuta');
+  if (!despachoData || despachoNavActiva !== null) { btn.classList.add('hidden'); return; }
+  var pendientes = despachoData.paradas.filter(function(p){ return !p.entregado; });
+  if (!pendientes.length) { btn.classList.add('hidden'); return; }
+  btn.classList.remove('hidden');
+  btn.textContent = '▶ Iniciar ruta (' + pendientes.length + (pendientes.length === 1 ? ' parada)' : ' paradas)');
+}
+
+function toggleEntregaDirecta(fila, cliente, factura, btn) {
+  var todas = despachoData.paradas.concat(despachoData.sinUbicacion);
+  var p = todas.find(function(x){ return x.fila === fila; });
+  if (!p) return;
+  var nuevoEstado = !p.entregado;
+  p.entregado = nuevoEstado;
+  var card = btn.closest('.parada-card');
+  card.classList.toggle('entregado', nuevoEstado);
+  btn.classList.toggle('on', nuevoEstado);
+  btn.textContent = nuevoEstado ? '✓ Entregado' : 'Marcar';
+  actualizarProgreso();
+
+  enviarConReintento('registrarEntrega',
+    [SD.token, SD.color, SD.ruta, fila, cliente, factura, nuevoEstado],
+    function(e, red) {
+      if (red) return; // corte de red: se reintenta solo, no se revierte
+      p.entregado = !nuevoEstado;
+      card.classList.toggle('entregado', !nuevoEstado);
+      btn.classList.toggle('on', !nuevoEstado);
+      btn.textContent = !nuevoEstado ? '✓ Entregado' : 'Marcar';
+      actualizarProgreso();
+      err(e);
+    });
+}
+
+// ---- Navegación en vivo dentro de la app (sin salir a Google Maps) ----
+
+// Posición de referencia para elegir "la más cercana": la última lectura
+// del GPS si existe; si no, la bodega.
+function _posActual() {
+  if (despachoUltimaPos) return { lat: despachoUltimaPos.lat, lng: despachoUltimaPos.lng };
+  if (despachoData && despachoData.bodega) return { lat: despachoData.bodega.lat, lng: despachoData.bodega.lng };
+  return null;
+}
+
+// La siguiente parada es SIEMPRE la pendiente MÁS CERCANA a donde estás,
+// no la que toque por orden fijo. Así no te manda lejos y luego te regresa.
+function siguienteParadaPendiente() {
+  if (!despachoData) return null;
+  var pend = despachoData.paradas.filter(function(x){ return !x.entregado && !x.pospuesto && x.lat && x.lng; });
+  if (!pend.length) pend = despachoData.paradas.filter(function(x){ return !x.entregado && x.lat && x.lng; });
+  if (!pend.length) return null;
+  var pos = _posActual();
+  if (!pos) return pend[0];
+  pend.sort(function(a, b){
+    return distanciaMetros(pos.lat, pos.lng, a.lat, a.lng) - distanciaMetros(pos.lat, pos.lng, b.lat, b.lng);
+  });
+  return pend[0];
+}
+
+// Reordena la LISTA visible por cercanía a tu posición (pendientes primero,
+// las más cercanas arriba; luego reagendadas; al final las entregadas) y
+// renumera. Se llama al iniciar y al terminar cada entrega.
+function reordenarListaPorCercania() {
+  if (!despachoData) return;
+  var pos = _posActual();
+  var pend = despachoData.paradas.filter(function(p){ return !p.entregado && !p.pospuesto; });
+  var pospu = despachoData.paradas.filter(function(p){ return !p.entregado && p.pospuesto; });
+  var hechas = despachoData.paradas.filter(function(p){ return p.entregado; });
+  if (pos) pend.sort(function(a, b){
+    var da = (a.lat && a.lng) ? distanciaMetros(pos.lat, pos.lng, a.lat, a.lng) : 1e12;
+    var db = (b.lat && b.lng) ? distanciaMetros(pos.lat, pos.lng, b.lat, b.lng) : 1e12;
+    return da - db;
+  });
+  despachoData.paradas = pend.concat(pospu, hechas);
+  despachoData.paradas.forEach(function(p, i){ p.orden = i + 1; });
+  var div = document.getElementById('despachoParadas');
+  if (div) { div.innerHTML = ''; despachoData.paradas.forEach(function(p){ div.appendChild(crearParadaCard(p)); }); }
+}
+
+function iniciarRuta() {
+  // Toma tu posición real al arrancar para elegir la parada más cercana.
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function(pos){ despachoUltimaPos = { lat: pos.coords.latitude, lng: pos.coords.longitude, t: Date.now() }; _arrancarRuta(); },
+      function(){ _arrancarRuta(); },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 6000 }
+    );
+  } else { _arrancarRuta(); }
+}
+function _arrancarRuta() {
+  reordenarListaPorCercania();
+  var siguiente = siguienteParadaPendiente();
+  if (siguiente) activarNavHaciaParada(siguiente);
+}
+
+// Muestra/oculta las 3 capas de la ruta de navegación (borde, línea, flujo).
+function _visRutaNav(v) {
+  ['ruta-nav-casing', 'ruta-nav-line', 'ruta-nav-flow'].forEach(function(id){
+    if (despachoMapa && despachoMapa.getLayer(id)) despachoMapa.setLayoutProperty(id, 'visibility', v);
+  });
+}
+// Animación de "flujo" (guiones que se desplazan) sobre la ruta — efecto vivo.
+var _flowRAF = null;
+var _dashSeq = [[0,4,3],[0.5,4,2.5],[1,4,2],[1.5,4,1.5],[2,4,1],[2.5,4,0.5],[3,4,0],[0,0.5,3,3.5],[0,1,3,3],[0,1.5,3,2.5],[0,2,3,2],[0,2.5,3,1.5],[0,3,3,1],[0,3.5,3,0.5]];
+function _animarFlujoRuta(iniciar) {
+  if (!iniciar) { if (_flowRAF) { cancelAnimationFrame(_flowRAF); _flowRAF = null; } return; }
+  if (_flowRAF) return;
+  var ult = -1;
+  var paso = function(ts) {
+    if (!despachoMapa || !despachoMapa.getLayer('ruta-nav-flow')) { _flowRAF = null; return; }
+    var idx = Math.floor(ts / 90) % _dashSeq.length;
+    if (idx !== ult) { ult = idx; try { despachoMapa.setPaintProperty('ruta-nav-flow', 'line-dasharray', _dashSeq[idx]); } catch (e) {} }
+    _flowRAF = requestAnimationFrame(paso);
+  };
+  _flowRAF = requestAnimationFrame(paso);
+}
+
+// Deslizar hacia abajo en la barra superior cierra la navegación (además de la X).
+var _cierreDeslizBound = false;
+function activarCierreDeslizando(el) {
+  if (_cierreDeslizBound) return;
+  _cierreDeslizBound = true;
+  var y0 = null;
+  el.addEventListener('touchstart', function(e){ y0 = e.touches[0].clientY; }, { passive:true });
+  el.addEventListener('touchmove', function(e){
+    if (y0 !== null && e.touches[0].clientY - y0 > 70) { y0 = null; cerrarNav(); }
+  }, { passive:true });
+  el.addEventListener('touchend', function(){ y0 = null; }, { passive:true });
+}
+
+// Próxima maniobra pendiente (para la burbuja de aviso).
+var despachoManiobra = null;
+
+function maniobraTexto(m) {
+  var grados = gradosManiobra(m);
+  if (!m) return { txt: 'Continúa recto', grados: grados, uturn: false };
+  var type = m.type || '', mod = m.modifier || '';
+  var t, uturn = mod.indexOf('uturn') >= 0;
+  if (type === 'arrive') t = 'Llegando al destino';
+  else if (type === 'roundabout' || type === 'rotary') t = 'Toma la rotonda';
+  else if (uturn) t = 'Cambio de sentido';
+  else if (mod === 'left') t = 'Gira a la izquierda';
+  else if (mod === 'right') t = 'Gira a la derecha';
+  else if (mod === 'slight left') t = 'Mantente a la izquierda';
+  else if (mod === 'slight right') t = 'Mantente a la derecha';
+  else if (mod === 'sharp left') t = 'Giro cerrado a la izquierda';
+  else if (mod === 'sharp right') t = 'Giro cerrado a la derecha';
+  else t = 'Continúa recto';
+  return { txt: t, grados: grados, uturn: uturn };
+}
+
+// Muestra la burbuja de maniobra solo cuando se está por llegar a ella.
+function actualizarBurbuja(miLat, miLng) {
+  var b = document.getElementById('navBurbuja');
+  if (!b) return;
+  if (!despachoManiobra) { b.classList.remove('show'); return; }
+  if (despachoManiobra.llegada) {
+    b.className = 'nav-burbuja llegada show';
+    b.innerHTML = '<div class="nb-ic">🏁</div><div class="nb-tx">Has llegado<small>Confirma la entrega con ✓</small></div>';
+    return;
+  }
+  var d = distanciaMetros(miLat, miLng, despachoManiobra.lat, despachoManiobra.lng);
+  if (d < 320 && d > 10) {
+    b.className = 'nav-burbuja show' + (despachoManiobra.uturn ? ' alerta' : '');
+    b.innerHTML = '<div class="nb-ic">' + svgFlecha(despachoManiobra.grados) + '</div>' +
+      '<div class="nb-tx">En ' + formatDist(d) +
+      '<small>' + despachoManiobra.txt + (despachoManiobra.calle ? (' · ' + despachoManiobra.calle) : '') + '</small></div>';
+  } else {
+    b.classList.remove('show');
+  }
+}
+
+// ---- GPS uniforme en todos los dispositivos ----
+// No dependemos solo de watchPosition (en varios Android/Firefox entrega
+// una lectura y se queda callado). Además pedimos la posición ACTIVAMENTE
+// cada 1 s, así el seguimiento avanza igual de fluido en cualquier equipo.
+var despachoNavDest = null, despachoGpsPoll = null, despachoUltimoGps = 0;
+
+function _gpsOk(pos) {
+  if (despachoNavActiva === null || !despachoNavDest) return;
+  despachoUltimoGps = Date.now();
+  try { actualizarNav(pos, despachoNavDest.lat, despachoNavDest.lng); } catch (e) {}
+}
+
+function _iniciarGps() {
+  if (!navigator.geolocation || despachoNavActiva === null || !despachoNavDest) return;
+  _detenerGps();
+  despachoUltimoGps = Date.now();
+  // 1) watchPosition: en los navegadores que sí transmiten, da alta frecuencia.
+  try {
+    despachoWatchId = navigator.geolocation.watchPosition(
+      _gpsOk, function(){}, { enableHighAccuracy: true, maximumAge: 1000, timeout: 12000 }
+    );
+  } catch (e) {}
+  // 2) Poll cada 1 s: garantiza lecturas regulares aunque watchPosition no
+  //    transmita (era la causa del "salto cada 9 segundos" en algunos Android).
+  var pedir = function() {
+    if (despachoNavActiva === null || !despachoNavDest) return;
+    navigator.geolocation.getCurrentPosition(
+      _gpsOk, function(){}, { enableHighAccuracy: true, maximumAge: 1000, timeout: 8000 }
+    );
+  };
+  despachoGpsPoll = setInterval(pedir, 1000);
+  pedir();
+}
+
+function _detenerGps() {
+  if (despachoWatchId !== null) { try { navigator.geolocation.clearWatch(despachoWatchId); } catch (e) {} despachoWatchId = null; }
+  if (despachoGpsPoll !== null) { clearInterval(despachoGpsPoll); despachoGpsPoll = null; }
+}
+
+function activarNavHaciaParada(p) {
+  if (despachoNavActiva !== null) {
+    var prev = despachoData.paradas.find(function(x){ return x.fila === despachoNavActiva; });
+    if (prev) actualizarIconoParada(prev.fila, prev, false);
+  }
+  despachoNavActiva = p.fila;
+  despachoUltimoFetchNav = 0;
+  despachoSeguimiento = true;
+  despachoUltimaPos = null;
+  despachoHaLlegado = false;
+  _segRender = null; _segTarget = null; despachoAncla = null; // reinicia interpolación/rumbo
+  actualizarIconoParada(p.fila, p, true);
+
+  document.querySelectorAll('.parada-card.nav-actual').forEach(function(c){ c.classList.remove('nav-actual'); });
+  var cardActivo = document.getElementById('parada_' + p.fila);
+  if (cardActivo) cardActivo.classList.add('nav-actual');
+
+  document.getElementById('btnIniciarRuta').classList.add('hidden');
+  document.getElementById('despachoNavContainer').classList.add('nav-fullscreen');
+  document.getElementById('btnCentrar').classList.add('hidden');
+
+  if (despachoMapa && despachoMapaListo) {
+    if (despachoMapa.getLayer('ruta-plan-line')) despachoMapa.setLayoutProperty('ruta-plan-line', 'visibility', 'none');
+    _visRutaNav('visible');
+    _animarFlujoRuta(true);
+    // El chofer puede mover el mapa y hacer zoom con los dedos para ver
+    // la ruta más adelante o qué tan lejos está el destino. Al tocar se
+    // pausa el seguimiento y aparece el botón "Centrar"; tras unos
+    // segundos sin tocar, se vuelve a centrar solo. Se deja desactivada
+    // únicamente la rotación con dos dedos (el rumbo lo da el GPS) para
+    // que el celular montado no gire el mapa por accidente.
+    despachoMapa.dragPan.enable();
+    despachoMapa.touchZoomRotate.enable();
+    despachoMapa.touchZoomRotate.disableRotation();
+    despachoMapa.doubleClickZoom.enable();
+    despachoMapa.dragRotate.disable();
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        despachoMapa.resize();
+        _recalcOffsetSeg();
+        despachoMapa.easeTo({ center: [p.lng, p.lat], zoom: 18, duration: 400 });
+      });
+    });
+  }
+
+  // Overlays: la barra superior (nombre del cliente) y la franja de stats
+  // van como filas del contenedor; los botones y la burbuja flotan DENTRO
+  // del mapa. Así el mapa gana casi toda la pantalla.
+  var contenedor = document.getElementById('despachoNavContainer');
+  var mapEl = document.getElementById('despachoMap');
+  var banner = document.getElementById('navTurnBanner');
+  var statsRow = document.getElementById('navStatsRow');
+  var navAccion = document.getElementById('navAccion');
+  if (navAccion.parentNode !== mapEl) mapEl.appendChild(navAccion);
+  if (statsRow.parentNode !== contenedor || statsRow.nextSibling) contenedor.appendChild(statsRow); // franja al fondo
+  var burbuja = document.getElementById('navBurbuja');
+  if (!burbuja) { burbuja = document.createElement('div'); burbuja.id = 'navBurbuja'; burbuja.className = 'nav-burbuja'; mapEl.appendChild(burbuja); }
+  burbuja.classList.remove('show');
+  despachoManiobra = null;
+  // La vista ocupa TODA la pantalla (neutraliza el transform del panel).
+  document.getElementById('panelCierre').classList.add('nav-abierta');
+
+  // Barra superior = a dónde vamos (nombre del cliente), grande.
+  banner.classList.remove('hidden');
+  banner.innerHTML =
+    '<button class="nav-exit-btn" onclick="cerrarNav()" aria-label="Salir">✕</button>' +
+    '<div class="nav-cli-nombre" id="navCliNombre">📦 ' + p.cliente + '</div>' +
+    '<div class="nav-exit-spacer"></div>';
+  activarCierreDeslizando(banner);
+  // Ocultar la barra de pestañas para que la franja inferior de stats se
+  // vea completa (antes quedaba tapada por RUTA/CIERRE/RETIRO).
+  var _bn = document.getElementById('bottomnav'); if (_bn) _bn.classList.add('hidden');
+
+  // Franja inferior: distancia · tiempo · hora de llegada.
+  statsRow.classList.remove('hidden');
+  statsRow.innerHTML =
+    '<div class="nsp-col"><div class="nsp-val" id="nsKm">-- km</div><div class="nsp-lbl">Distancia</div></div>' +
+    '<div class="nsp-col nsp-col-mid"><div class="nsp-val" id="nsEtaBig">-- min</div><div class="nsp-lbl">Tiempo</div></div>' +
+    '<div class="nsp-col"><div class="nsp-val" id="nsLlegaHora">--:--</div><div class="nsp-lbl">Llegada</div></div>';
+
+  navAccion.classList.remove('hidden');
+  navAccion.innerHTML =
+    '<div class="nav-fab-col">' +
+      '<button class="navfab fab-maps" onclick="window.open(\'https://www.google.com/maps/dir/?api=1&destination=' + p.lat + ',' + p.lng + '\',\'_blank\')"><span class="fab-ic">📍</span><span class="fab-lbl">Maps</span></button>' +
+      '<button class="navfab fab-entregado" id="btnEntregarGrande" onclick="marcarEntregadoActual(' + p.fila + ',\'' + escapeAttr(p.cliente) + '\',\'' + escapeAttr(p.factura) + '\')"><span class="fab-ic">✓</span><span class="fab-lbl" id="fabEntregarLbl">Entregar</span></button>' +
+      '<button class="navfab fab-reagendar" onclick="reagendarVisitaUI(' + p.fila + ',\'' + escapeAttr(p.cliente) + '\',\'' + escapeAttr(p.factura) + '\')"><span class="fab-ic">↻</span><span class="fab-lbl">Reagendar</span></button>' +
+      '<button class="navfab fab-cancelar" onclick="abrirIncidencia(' + p.fila + ',\'' + escapeAttr(p.cliente) + '\',\'' + escapeAttr(p.factura) + '\')"><span class="fab-ic">⚠</span><span class="fab-lbl">No pude</span></button>' +
+    '</div>';
+
+  if (!navigator.geolocation) {
+    document.getElementById('nsEtaBig').textContent = 'Sin GPS';
+    return;
+  }
+  despachoNavDest = { lat: p.lat, lng: p.lng };
+  _iniciarGps();
+}
+
+function formatDist(m) {
+  if (m == null) return '';
+  return m < 1000 ? Math.round(m) + ' m' : (m / 1000).toFixed(1) + ' km';
+}
+
+// ---- Seguimiento FLUIDO (interpolación tipo Google Maps) ----
+// El GPS de Android entrega lecturas espaciadas; en vez de saltar la
+// cámara en cada lectura, se desliza suave hacia la posición objetivo a
+// ~60 fps. _segRender = posición mostrada, _segTarget = última del GPS.
+var _segRender = null, _segTarget = null, _segRAF = null, _segOffsetCache = [0, 0];
+var despachoAncla = null; // punto de referencia para calcular el rumbo
+
+function _recalcOffsetSeg() { _segOffsetCache = offsetSeguimiento(); }
+
+function _arrancarSeguimientoRAF() {
+  if (_segRAF !== null) return; // ya está animando
+  var loop = function() {
+    _segRAF = null;
+    if (despachoNavActiva === null || !_segTarget || !_segRender || !despachoMapa) return;
+    var k = 0.05; // suavizado: más bajo = más suave/lento
+    _segRender.lat += (_segTarget.lat - _segRender.lat) * k;
+    _segRender.lng += (_segTarget.lng - _segRender.lng) * k;
+    var db = ((_segTarget.bearing - _segRender.bearing + 540) % 360) - 180;
+    _segRender.bearing += db * k;
+    if (despachoMiUbicacionMarker) despachoMiUbicacionMarker.setLngLat([_segRender.lng, _segRender.lat]);
+    if (despachoSeguimiento) {
+      despachoMapa.easeTo({ center: [_segRender.lng, _segRender.lat], bearing: _segRender.bearing, offset: _segOffsetCache, duration: 0 });
+    }
+    var lejos = Math.abs(_segTarget.lat - _segRender.lat) > 2e-7 ||
+                Math.abs(_segTarget.lng - _segRender.lng) > 2e-7 ||
+                Math.abs(db) > 0.3;
+    if (lejos) _segRAF = requestAnimationFrame(loop); // sigue mientras no converja
+  };
+  _segRAF = requestAnimationFrame(loop);
+}
+
+function _detenerSeguimientoRAF() {
+  if (_segRAF !== null) { cancelAnimationFrame(_segRAF); _segRAF = null; }
+  _segRender = null; _segTarget = null;
+}
+
+function actualizarNav(pos, destLat, destLng) {
+  var miLat = pos.coords.latitude, miLng = pos.coords.longitude;
+  var acc = (typeof pos.coords.accuracy === 'number') ? pos.coords.accuracy : 999;
+  var ahoraMs = Date.now();
+  var vel = (typeof pos.coords.speed === 'number' && !isNaN(pos.coords.speed)) ? pos.coords.speed : null;
+
+  // Distancia y velocidad implícita respecto a la última lectura aceptada.
+  var despl = 0, velImplicita = 0;
+  if (despachoUltimaPos) {
+    despl = distanciaMetros(despachoUltimaPos.lat, despachoUltimaPos.lng, miLat, miLng);
+    var dt = Math.max(0.001, (ahoraMs - (despachoUltimaPos.t || ahoraMs)) / 1000);
+    velImplicita = despl / dt;
+  }
+  // Descartar lecturas claramente basura (Android/Firefox mezcla red/wifi):
+  // salto imposible (>200 km/h) o muy imprecisa con salto grande.
+  if (despachoUltimaPos && (velImplicita > 55 || (acc > 80 && despl > 40))) {
+    return; // no mueve el cursor con una lectura mala
+  }
+  if (!despachoUltimaPos && acc > 150) return; // primera lectura demasiado burda
+
+  actualizarEstadoLlegada(distanciaMetros(miLat, miLng, destLat, destLng) < 40);
+
+  // Rumbo por ANCLA: se recalcula cuando te alejaste >12 m del punto de
+  // referencia (no entre lecturas seguidas). Así el mapa gira de forma
+  // fiable aunque las lecturas lleguen cada segundo y cortas. Si estás casi
+  // parado, mantiene el rumbo (no gira sin sentido).
+  var rumbo = despachoBearing;
+  var casiParado = (vel !== null && vel < 0.8);
+  if (!despachoAncla) despachoAncla = { lat: miLat, lng: miLng };
+  var distAncla = distanciaMetros(despachoAncla.lat, despachoAncla.lng, miLat, miLng);
+  if (!casiParado) {
+    if (typeof pos.coords.heading === 'number' && !isNaN(pos.coords.heading) && vel !== null && vel >= 2) {
+      rumbo = pos.coords.heading; // rumbo del GPS cuando hay velocidad fiable
+      despachoAncla = { lat: miLat, lng: miLng };
+    } else if (distAncla > 12) {
+      rumbo = calcularRumbo(despachoAncla.lat, despachoAncla.lng, miLat, miLng);
+      despachoAncla = { lat: miLat, lng: miLng };
+    }
+  }
+  despachoUltimaPos = { lat: miLat, lng: miLng, t: ahoraMs };
+  despachoBearing = rumbo;
+
+  if (!despachoMiUbicacionMarker) {
+    despachoMiUbicacionMarker = new maplibregl.Marker({ element: crearElementoChevron(), anchor: 'center' }).setLngLat([miLng, miLat]).addTo(despachoMapa);
+  }
+
+  // Fija el objetivo; la cámara y el cursor se deslizan hacia él (fluido).
+  _segTarget = { lat: miLat, lng: miLng, bearing: rumbo };
+  if (!_segRender) _segRender = { lat: miLat, lng: miLng, bearing: rumbo };
+  _arrancarSeguimientoRAF();
+
+  actualizarBurbuja(miLat, miLng);
+
+  var ahora = Date.now();
+  if (ahora - despachoUltimoFetchNav < 9000) return;
+  despachoUltimoFetchNav = ahora;
+
+  fetch('https://router.project-osrm.org/route/v1/driving/' + miLng + ',' + miLat + ';' + destLng + ',' + destLat + '?overview=full&geometries=geojson&steps=true')
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      if (!d.routes || !d.routes.length) throw new Error('sin ruta');
+      var ruta = d.routes[0];
+      if (despachoMapa.getSource('ruta-nav')) {
+        despachoMapa.getSource('ruta-nav').setData({ type: 'Feature', geometry: ruta.geometry });
+      }
+
+      var kmNum = ruta.distance / 1000;
+      // El ruteo gratuito (OSRM) calcula tiempos "sin tráfico" y salen muy
+      // cortos. Se aplica un factor de tráfico de ciudad para acercarlo a la
+      // realidad (ajustable). No es tráfico en vivo como Google, es un estimado.
+      var FACTOR_TRAFICO = 1.8;
+      var durReal = ruta.duration * FACTOR_TRAFICO;
+      var min = Math.round(durReal / 60);
+      var llegada = new Date(Date.now() + durReal * 1000);
+      document.getElementById('nsEtaBig').textContent = (min < 1 ? '<1' : min) + ' min';
+      document.getElementById('nsLlegaHora').textContent = formatHora(llegada);
+      document.getElementById('nsKm').textContent = formatDist(ruta.distance);
+
+      // Guardar la próxima maniobra para la burbuja de aviso (se calcula
+      // su distancia en cada tick del GPS, no solo cada vez que se consulta).
+      var pasos = (ruta.legs[0] && ruta.legs[0].steps) || [];
+      var pasoSig = pasos.length > 1 ? pasos[1] : pasos[0];
+      if (kmNum < 0.05) {
+        despachoManiobra = { llegada: true };
+      } else if (pasoSig && pasoSig.maneuver && pasoSig.maneuver.location) {
+        var loc = pasoSig.maneuver.location; // [lng, lat]
+        var mt = maniobraTexto(pasoSig.maneuver);
+        despachoManiobra = { lat: loc[1], lng: loc[0], txt: mt.txt, grados: mt.grados, uturn: mt.uturn, calle: pasoSig.name || '' };
+      } else {
+        despachoManiobra = null;
+      }
+      actualizarBurbuja(miLat, miLng);
+    })
+    .catch(function() {
+      document.getElementById('nsEtaBig').textContent = '--';
+    });
+}
+
+function marcarEntregadoActual(fila, cliente, factura) {
+  var p = despachoData.paradas.find(function(x){ return x.fila === fila; });
+  if (p) p.entregado = true;
+  var card = document.getElementById('parada_' + fila);
+  if (card) {
+    card.classList.add('entregado');
+    var num = card.querySelector('.parada-num');
+    if (num) num.textContent = '✓';
+  }
+  actualizarProgreso();
+
+  // Corte de red: reintenta en segundo plano SIN desmarcar. Solo si es un
+  // error real (no de red) se avisa (y se recarga si la sesión expiró).
+  enviarConReintento('registrarEntrega',
+    [SD.token, SD.color, SD.ruta, fila, cliente, factura, true],
+    function(e, red) { if (!red) err(e); });
+
+  reordenarListaPorCercania(); // recalcula el orden por cercanía a tu posición actual
+  var siguiente = siguienteParadaPendiente();
+  if (siguiente) {
+    activarNavHaciaParada(siguiente);
+  } else {
+    cerrarNav();
+  }
+  actualizarBotonIniciar();
+}
+
+function moverAlFinalYAvanzar(filaActual) {
+  var idx = despachoData.paradas.findIndex(function(x){ return x.fila === filaActual; });
+  if (idx !== -1) {
+    var item = despachoData.paradas.splice(idx, 1)[0];
+    despachoData.paradas.push(item);
+    despachoData.paradas.forEach(function(p, i){ p.orden = i + 1; });
+    var paradasDiv = document.getElementById('despachoParadas');
+    paradasDiv.innerHTML = '';
+    despachoData.paradas.forEach(function(p){ paradasDiv.appendChild(crearParadaCard(p)); });
+  }
+  actualizarProgreso();
+
+  var siguiente = siguienteParadaPendiente();
+  if (siguiente) {
+    activarNavHaciaParada(siguiente);
+  } else {
+    cerrarNav();
+  }
+  actualizarBotonIniciar();
+}
+
+function reagendarVisitaUI(fila, cliente, factura) {
+  if (!confirm('¿Reagendar esta visita para el final de la ruta?')) return;
+  var p = despachoData.paradas.find(function(x){ return x.fila === fila; });
+  if (p) p.pospuesto = true;
+  var card = document.getElementById('parada_' + fila);
+  if (card) card.classList.add('pospuesto');
+
+  enviarConReintento('reagendarVisita',
+    [SD.token, SD.color, SD.ruta, fila, cliente, factura],
+    function(e, red){ if (!red) err(e); });
+
+  moverAlFinalYAvanzar(fila);
+}
+
+function abrirIncidencia(fila, cliente, factura) {
+  document.getElementById('tituloModalEgreso').textContent = 'No se pudo entregar';
+  document.getElementById('bodyEgreso').innerHTML =
+    '<div style="background:#fff4e5;padding:12px;border-radius:9px;margin-bottom:14px;font-size:14px;">' +
+      '<p><strong>Cliente:</strong> ' + cliente + '</p>' +
+      '<p style="margin-top:4px;"><strong>Factura:</strong> ' + factura + '</p>' +
+    '</div>' +
+    '<p style="margin-bottom:10px;font-weight:700;color:#4a5568;">Motivo (se pedirá una foto):</p>' +
+    '<div class="btn-group" style="flex-direction:column;gap:8px;">' +
+      '<button class="btn btn-secondary" onclick="tomarFotoIncidencia(' + fila + ',\'' + escapeAttr(cliente) + '\',\'' + escapeAttr(factura) + '\',\'Cambio de numero o direccion\')">Cambió el número / dirección</button>' +
+      '<button class="btn btn-secondary" onclick="tomarFotoIncidencia(' + fila + ',\'' + escapeAttr(cliente) + '\',\'' + escapeAttr(factura) + '\',\'Local cerrado\')">Local cerrado</button>' +
+      '<button class="btn btn-secondary" onclick="cerrarModal(\'modalEgreso\')">Cancelar</button>' +
+    '</div>';
+  abrirModal('modalEgreso');
+}
+
+var _incidenciaPendiente = null;
+
+function tomarFotoIncidencia(fila, cliente, factura, motivo) {
+  _incidenciaPendiente = { fila: fila, cliente: cliente, factura: factura, motivo: motivo };
+  var input = document.getElementById('inputFotoIncidencia');
+  input.value = '';
+  input.click();
+}
+
+function comprimirImagen(file, callback) {
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var img = new Image();
+    img.onload = function() {
+      var maxW = 1000;
+      var escala = Math.min(1, maxW / img.width);
+      var canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * escala);
+      canvas.height = Math.round(img.height * escala);
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // Foto más liviana: la incidencia sigue siendo legible pero el envío
+      // pesa ~60% menos, sube al primer intento y no dispara reintentos que
+      // luego bloquean el canal cuando se pulsa CERRAR RUTA.
+      callback(canvas.toDataURL('image/jpeg', 0.55));
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('inputFotoIncidencia').addEventListener('change', function(e) {
+  var file = e.target.files && e.target.files[0];
+  if (!file || !_incidenciaPendiente) return;
+  var datos = _incidenciaPendiente;
+  _incidenciaPendiente = null;
+  comprimirImagen(file, function(base64) {
+    cerrarModal('modalEgreso');
+    var p = despachoData.paradas.find(function(x){ return x.fila === datos.fila; });
+    if (p) p.pospuesto = true;
+    var card = document.getElementById('parada_' + datos.fila);
+    if (card) card.classList.add('pospuesto');
+
+    enviarConReintento('registrarIncidencia',
+      [SD.token, SD.color, SD.ruta, datos.fila, datos.cliente, datos.factura, datos.motivo, base64],
+      function(e, red){ if (!red) err(e); });
+
+    moverAlFinalYAvanzar(datos.fila);
+  });
+});
+
+function cerrarNav() {
+  if (despachoNavActiva !== null && despachoData) {
+    var actual = despachoData.paradas.find(function(x){ return x.fila === despachoNavActiva; });
+    if (actual) actualizarIconoParada(actual.fila, actual, false);
+  }
+  despachoNavActiva = null;
+  document.getElementById('navTurnBanner').classList.add('hidden');
+  document.getElementById('navTurnBanner').innerHTML = '';
+  document.getElementById('navStatsRow').classList.add('hidden');
+  document.getElementById('navStatsRow').innerHTML = '';
+  document.getElementById('navAccion').classList.add('hidden');
+  document.getElementById('navAccion').innerHTML = '';
+  document.getElementById('btnCentrar').classList.add('hidden');
+  var _bb = document.getElementById('navBurbuja'); if (_bb) _bb.classList.remove('show');
+  var _bn = document.getElementById('bottomnav'); if (_bn) _bn.classList.remove('hidden');
+  despachoManiobra = null;
+  document.getElementById('despachoNavContainer').classList.remove('nav-fullscreen');
+  document.getElementById('panelCierre').classList.remove('nav-abierta');
+  document.querySelectorAll('.parada-card.nav-actual').forEach(function(c){ c.classList.remove('nav-actual'); });
+  _detenerGps();
+  despachoNavDest = null;
+  despachoAncla = null;
+  _detenerSeguimientoRAF();
+
+  if (despachoMapa && despachoMapaListo) {
+    _visRutaNav('none');
+    _animarFlujoRuta(false);
+    if (despachoMapa.getLayer('ruta-plan-line')) despachoMapa.setLayoutProperty('ruta-plan-line', 'visibility', 'visible');
+    if (despachoMapa.getSource('ruta-nav')) despachoMapa.getSource('ruta-nav').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
+    // fuera de navegación el mapa vuelve a responder al dedo normalmente
+    despachoMapa.dragPan.enable();
+    despachoMapa.dragRotate.enable();
+    despachoMapa.touchZoomRotate.enable();
+    despachoMapa.doubleClickZoom.enable();
+  }
+  despachoSeguimiento = true;
+
+  actualizarBotonIniciar();
+
+  if (despachoMapa && despachoMapaListo && despachoData) {
+    var bounds = new maplibregl.LngLatBounds();
+    bounds.extend([despachoData.bodega.lng, despachoData.bodega.lat]);
+    despachoData.paradas.forEach(function(p){ bounds.extend([p.lng, p.lat]); });
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        despachoMapa.resize();
+        despachoMapa.fitBounds(bounds, { padding: 40, duration: 600, bearing: 0 });
+      });
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var inp = document.getElementById('claveInput');
+  if (inp) inp.addEventListener('keypress', function(e){ if(e.key==='Enter') validarClave(); });
+});
+window.addEventListener('resize', function(){ if (despachoNavActiva !== null) _recalcOffsetSeg(); });
+</script>
+</body>
+</html>
