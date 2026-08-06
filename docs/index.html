@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es-EC">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Cierre Ruta — Industria Alimenticia YES</title>
+  <meta name="theme-color" content="#1a1f35" />
+  <meta name="description" content="Aplicación de cierre de ruta para los choferes de Industria Alimenticia YES." />
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png" />
+
+  <!-- iOS: instalación por "Compartir → Añadir a inicio" -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Cierre Ruta" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+
+  <style>
+    :root { --navy: #1a1f35; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; height: 100%; width: 100%;
+      background: var(--navy); overflow: hidden;
+      overscroll-behavior: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    /* La app de Apps Script llena toda la pantalla, incluidas las zonas de notch */
+    #app {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      border: 0; display: block; background: var(--navy);
+    }
+    /* Pantalla de carga con el logo, se oculta cuando la app termina de cargar */
+    #splash {
+      position: fixed; inset: 0; z-index: 10;
+      background: var(--navy); color: #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 22px; transition: opacity .45s ease; padding: env(safe-area-inset-top) 24px env(safe-area-inset-bottom);
+    }
+    #splash.oculto { opacity: 0; pointer-events: none; }
+    #splash img { width: 128px; height: 128px; border-radius: 28px; box-shadow: 0 8px 30px rgba(0,0,0,.4); }
+    #splash .marca { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; opacity: .7; font-weight: 700; }
+    #splash .sub { font-size: 15px; font-weight: 700; opacity: .95; margin-top: -8px; }
+    .spinner {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,.2); border-top-color: #00c853;
+      animation: giro .9s linear infinite;
+    }
+    @keyframes giro { to { transform: rotate(360deg); } }
+
+    /* Botón "Instalar" (Android/Chrome). Aparece solo si el navegador lo ofrece. */
+    #btnInstalar {
+      position: fixed; z-index: 20; left: 50%; transform: translateX(-50%);
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      display: none; align-items: center; gap: 8px;
+      background: #00c853; color: #06280f; border: 0; border-radius: 999px;
+      padding: 13px 22px; font-weight: 800; font-size: 15px;
+      box-shadow: 0 6px 20px rgba(0,200,83,.45); cursor: pointer;
+    }
+    #reintento {
+      position: fixed; z-index: 15; left: 50%; transform: translateX(-50%);
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      display: none; color: #cfe1ff; font-size: 13px; text-align: center;
+      background: rgba(0,0,0,.35); padding: 10px 16px; border-radius: 12px;
+    }
+    #reintento a { color: #fff; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <!-- Pantalla de carga -->
+  <div id="splash">
+    <img src="icons/icon-192.png" alt="Industria Alimenticia YES" />
+    <div class="spinner" aria-hidden="true"></div>
+    <div>
+      <div class="marca">Industria Alimenticia YES</div>
+    </div>
+    <div class="sub">Cierre de Ruta</div>
+  </div>
+
+  <!-- La aplicación real (Apps Script) embebida a pantalla completa.
+       Los permisos delegan GPS y cámara para el seguimiento y las fotos. -->
+  <iframe
+    id="app"
+    title="Cierre de Ruta"
+    src="https://script.google.com/macros/s/AKfycbzNNsRS5dbZYWDEbzzsleO0Z9CPiYmedMTWjivhebEBmHWMs5aEZYex4A9vhsa8-aOvng/exec"
+    allow="geolocation; camera; microphone; fullscreen; accelerometer; gyroscope; magnetometer"
+    allowfullscreen
+    referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+  <button id="btnInstalar">⬇ Instalar app</button>
+  <div id="reintento">
+    Si no carga, <a id="linkDirecto" href="https://script.google.com/macros/s/AKfycbzNNsRS5dbZYWDEbzzsleO0Z9CPiYmedMTWjivhebEBmHWMs5aEZYex4A9vhsa8-aOvng/exec" target="_blank" rel="noopener">ábrela aquí</a>.
+  </div>
+
+  <script>
+    (function () {
+      var splash = document.getElementById('splash');
+      var frame  = document.getElementById('app');
+      var aviso  = document.getElementById('reintento');
+      var oculto = false;
+
+      function ocultarSplash() {
+        if (oculto) return;
+        oculto = true;
+        splash.classList.add('oculto');
+        setTimeout(function () { splash.style.display = 'none'; }, 500);
+      }
+      // La app carga recursos pesados (mapa); damos un momento y ocultamos.
+      frame.addEventListener('load', function () { setTimeout(ocultarSplash, 700); });
+      // Respaldo: nunca dejar el splash pegado más de 12s.
+      setTimeout(ocultarSplash, 12000);
+      // Si a los 20s sigue sin verse nada, ofrecer abrir en navegador.
+      setTimeout(function () { if (!oculto) return; aviso.style.display = 'block'; setTimeout(function(){ aviso.style.display='none'; }, 8000); }, 20000);
+
+      // Registrar el service worker (lo que hace instalable la PWA).
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('service-worker.js').catch(function (e) {
+            console.warn('SW no registrado:', e);
+          });
+        });
+      }
+
+      // Botón "Instalar" en Android/Chrome.
+      var deferred = null;
+      var btn = document.getElementById('btnInstalar');
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        deferred = e;
+        btn.style.display = 'inline-flex';
+      });
+      btn.addEventListener('click', function () {
+        if (!deferred) return;
+        deferred.prompt();
+        deferred.userChoice.finally(function () { deferred = null; btn.style.display = 'none'; });
+      });
+      window.addEventListener('appinstalled', function () { btn.style.display = 'none'; });
+    })();
+  </script>
+</body>
+</html>
