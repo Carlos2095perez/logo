@@ -537,7 +537,7 @@ function doGet(e) {
   const page = e && e.parameter && e.parameter.page;
   const archivo = (page === 'admin') ? 'Admin' : 'Index';
   return HtmlService.createHtmlOutputFromFile(archivo)
-    .setTitle('Choferes — ' + (page === 'admin' ? 'Panel' : 'Acceso'))
+    .setTitle('Chóferes INDUYES' + (page === 'admin' ? ' — Panel' : ''))
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
 }
