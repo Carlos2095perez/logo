@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es-EC">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Choferes — Acceso (PRUEBAS)</title>
+  <style>
+    :root { --navy:#1a1f35; --navy2:#232a45; --verde:#00c853; --rojo:#ff5252; --txt:#eaf0ff; --mut:#9fb0d0; }
+    * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    body { margin:0; min-height:100vh; background:var(--navy); color:var(--txt);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      display:flex; align-items:center; justify-content:center; padding:24px; }
+    .card { width:100%; max-width:360px; background:var(--navy2); border-radius:20px;
+      padding:28px 22px; box-shadow:0 12px 40px rgba(0,0,0,.4); }
+    .badge { display:inline-block; font-size:11px; font-weight:800; letter-spacing:.12em;
+      background:#3a2a00; color:#ffcf5c; padding:4px 10px; border-radius:999px; margin-bottom:14px; }
+    h1 { font-size:19px; margin:0 0 4px; }
+    .sub { color:var(--mut); font-size:13px; margin:0 0 20px; }
+    label { display:block; font-size:12px; color:var(--mut); margin:14px 0 6px; font-weight:700; }
+    input { width:100%; padding:14px 16px; font-size:20px; text-align:center; letter-spacing:.15em;
+      border:1.5px solid #34406b; background:#141a30; color:#fff; border-radius:12px; outline:none; }
+    input:focus { border-color:var(--verde); }
+    input.correo { letter-spacing:normal; font-size:16px; text-align:left; }
+    button { width:100%; margin-top:18px; padding:15px; font-size:16px; font-weight:800;
+      border:0; border-radius:12px; cursor:pointer; }
+    .primary { background:var(--verde); color:#06280f; }
+    .link { background:none; color:var(--mut); font-weight:700; text-decoration:underline; padding:10px; margin-top:8px; font-size:13px; }
+    .msg { margin-top:14px; padding:12px 14px; border-radius:10px; font-size:13.5px; display:none; }
+    .msg.err { background:#3a1414; color:#ffb4b4; display:block; }
+    .msg.ok  { background:#0f2e1a; color:#9be7b4; display:block; }
+    .hidden { display:none; }
+    .home h1 { margin-bottom:12px; }
+    .perfil { background:#141a30; border-radius:12px; padding:16px; font-size:14px; line-height:1.7; }
+    .perfil b { color:var(--mut); font-weight:700; }
+    .spin { display:inline-block; width:16px; height:16px; border:2px solid rgba(0,0,0,.25);
+      border-top-color:#06280f; border-radius:50%; animation:g .8s linear infinite; vertical-align:-3px; margin-right:8px; }
+    @keyframes g { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">🧪 PROYECTO DE PRUEBAS</div>
+
+    <!-- ===== LOGIN (3 modos) ===== -->
+    <div id="login">
+      <!-- modo pin -->
+      <div id="modo-pin">
+        <h1>Ingresa tu PIN</h1>
+        <p class="sub">Escribe tu PIN de 6 dígitos.</p>
+        <label>PIN</label>
+        <input id="pinInput" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="off">
+        <button class="primary" onclick="entrarConPin()">ENTRAR</button>
+        <button class="link" onclick="verModo('correo')">¿Primera vez? Verifica tu correo</button>
+      </div>
+
+      <!-- modo correo -->
+      <div id="modo-correo" class="hidden">
+        <h1>Verifica tu correo</h1>
+        <p class="sub">Te enviaremos un código a tu correo autorizado.</p>
+        <label>Correo</label>
+        <input id="correoInput" class="correo" type="email" inputmode="email" placeholder="tucorreo@gmail.com" autocomplete="off">
+        <button class="primary" onclick="enviarCodigo()">ENVIAR CÓDIGO</button>
+        <button class="link" onclick="verModo('pin')">← Volver a PIN</button>
+      </div>
+
+      <!-- modo otp -->
+      <div id="modo-otp" class="hidden">
+        <h1>Ingresa el código</h1>
+        <p class="sub" id="otpSub">Revisa tu correo.</p>
+        <label>Código de 6 dígitos</label>
+        <input id="otpInput" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="off">
+        <button class="primary" onclick="verificarCodigo()">VERIFICAR</button>
+        <button class="link" onclick="verModo('correo')">Reenviar / cambiar correo</button>
+      </div>
+
+      <div id="msg" class="msg"></div>
+    </div>
+
+    <!-- ===== HOME (tras login, prueba de sesión protegida) ===== -->
+    <div id="home" class="home hidden">
+      <h1 id="hola">Hola</h1>
+      <div class="perfil" id="perfil">Cargando perfil…</div>
+      <button class="primary" onclick="probarPing()">Probar acción protegida (ping)</button>
+      <button class="link" onclick="cerrarSesion()">Cerrar sesión</button>
+      <div id="msgHome" class="msg"></div>
+    </div>
+  </div>
+
+<script>
+  // ---------- estado local ----------
+  var LS_DEVICE = 'choferes_device_id';
+  var LS_TOKEN  = 'choferes_token';   // el PIN guardado = la sesión durable
+
+  function obtenerDeviceId() {
+    var id = localStorage.getItem(LS_DEVICE);
+    if (!id) {
+      id = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random()));
+      localStorage.setItem(LS_DEVICE, id);
+    }
+    return id;
+  }
+  function getToken() { return localStorage.getItem(LS_TOKEN) || ''; }
+  function setToken(t) { localStorage.setItem(LS_TOKEN, t); }
+  function borrarToken() { localStorage.removeItem(LS_TOKEN); }
+
+  // ---------- wrapper único de llamadas (equivale a apiFetch) ----------
+  // Manda SIEMPRE deviceId; manda sesionToken en llamadas autenticadas.
+  // Ante sesión inválida -> logout local inmediato.
+  function apiCall(accion, extra) {
+    return new Promise(function (resolve, reject) {
+      var sobre = Object.assign({
+        accion: accion,
+        deviceId: obtenerDeviceId(),
+        sesionToken: getToken(),
+      }, extra || {});
+      google.script.run
+        .withSuccessHandler(function (res) {
+          if (res && res.sesionInvalida) {
+            manejarSesionInvalida(res.error);
+            reject(res);
+            return;
+          }
+          resolve(res || {});
+        })
+        .withFailureHandler(function (err) { reject({ error: (err && err.message) || 'Error de red' }); })
+        .api(sobre);
+    });
+  }
+
+  function manejarSesionInvalida(txt) {
+    borrarToken();
+    mostrarLogin();
+    verModo('pin');
+    msg('err', txt || 'Tu sesión terminó, contacta a tu administrador.');
+  }
+
+  // ---------- UI helpers ----------
+  function $(id) { return document.getElementById(id); }
+  function verModo(m) {
+    ['pin', 'correo', 'otp'].forEach(function (x) { $('modo-' + x).classList.toggle('hidden', x !== m); });
+    limpiarMsg();
+    var focos = { pin: 'pinInput', correo: 'correoInput', otp: 'otpInput' };
+    setTimeout(function () { var el = $(focos[m]); if (el) el.focus(); }, 50);
+  }
+  function msg(tipo, txt) { var m = $('msg'); m.className = 'msg ' + tipo; m.textContent = txt; }
+  function limpiarMsg() { var m = $('msg'); m.className = 'msg'; m.textContent = ''; }
+  function cargando(btnTexto) { msg('ok', ''); }
+  function mostrarLogin() { $('login').classList.remove('hidden'); $('home').classList.add('hidden'); }
+  function mostrarHome(nombre) {
+    $('login').classList.add('hidden'); $('home').classList.remove('hidden');
+    $('hola').textContent = 'Hola, ' + (nombre || '');
+    cargarPerfil();
+  }
+
+  // ---------- acciones de login ----------
+  function entrarConPin() {
+    var pin = ($('pinInput').value || '').trim();
+    if (!pin) { msg('err', 'Escribe tu PIN.'); return; }
+    msg('ok', 'Entrando…');
+    // En login el PIN va en el campo 'pin' (no en sesionToken todavía).
+    apiCall('login', { pin: pin, sesionToken: '' }).then(function (res) {
+      manejarRespuestaLogin(res, pin);
+    }).catch(function (e) { msg('err', (e && e.error) || 'No se pudo entrar.'); });
+  }
+
+  function manejarRespuestaLogin(res, pin) {
+    if (res.requiereVerificacion) {
+      // No es un error genérico: manda a verificar el correo.
+      $('correoInput').value = res.correo || '';
+      verModo('otp');
+      $('otpSub').textContent = 'Envía y revisa el código de: ' + (res.correo || 'tu correo');
+      msg('err', res.error || 'Debes verificar tu correo.');
+      // dispara el envío del código automáticamente
+      if (res.correo) enviarCodigoA(res.correo);
+      return;
+    }
+    if (res.dispositivoDistinto) { msg('err', res.error); return; }
+    if (res.estado === 200 && res.pin) {
+      setToken(res.pin);
+      mostrarHome(res.nombre);
+      return;
+    }
+    msg('err', res.error || 'PIN inválido.');
+  }
+
+  function enviarCodigo() {
+    var correo = ($('correoInput').value || '').trim();
+    if (!correo) { msg('err', 'Escribe tu correo.'); return; }
+    enviarCodigoA(correo);
+  }
+  function enviarCodigoA(correo) {
+    msg('ok', 'Enviando código…');
+    apiCall('solicitarOtp', { params: { correo: correo }, sesionToken: '' }).then(function (res) {
+      if (res.estado === 200) {
+        verModo('otp');
+        $('otpSub').textContent = 'Enviamos un código a ' + correo;
+        msg('ok', 'Código enviado. Revisa tu correo.');
+        window._correoOtp = correo;
+      } else {
+        verModo('correo');
+        msg('err', res.error || 'No se pudo enviar el código.');
+      }
+    }).catch(function (e) { msg('err', (e && e.error) || 'Error al enviar.'); });
+  }
+
+  function verificarCodigo() {
+    var codigo = ($('otpInput').value || '').trim();
+    var correo = window._correoOtp || ($('correoInput').value || '').trim();
+    if (!codigo) { msg('err', 'Escribe el código.'); return; }
+    msg('ok', 'Verificando…');
+    apiCall('verificarOtp', { params: { correo: correo, codigo: codigo }, sesionToken: '' }).then(function (res) {
+      if (res.estado === 200 && res.pin) {
+        // IMPORTANTE: verificar el correo NO ata el dispositivo. Hay que
+        // llamar de una a login con el pin devuelto para completar el vínculo.
+        return apiCall('login', { pin: res.pin, sesionToken: '' }).then(function (r2) {
+          manejarRespuestaLogin(r2, res.pin);
+        });
+      }
+      msg('err', res.error || 'Código incorrecto.');
+    }).catch(function (e) { msg('err', (e && e.error) || 'No se pudo verificar.'); });
+  }
+
+  // ---------- home (sesión protegida) ----------
+  function cargarPerfil() {
+    apiCall('miPerfil').then(function (p) {
+      if (p.estado !== 200) { $('perfil').textContent = p.error || 'No se pudo cargar.'; return; }
+      $('perfil').innerHTML =
+        '<div><b>Nombre:</b> ' + (p.nombre || '') + '</div>' +
+        '<div><b>Correo:</b> ' + (p.correo || '—') + '</div>' +
+        '<div><b>Ruta:</b> ' + (p.rutaColor || '—') + '</div>' +
+        '<div><b>Placa:</b> ' + (p.placa || '—') + '</div>';
+    }).catch(function () {});
+  }
+  function probarPing() {
+    apiCall('ping').then(function (r) {
+      var m = $('msgHome'); m.className = 'msg ok';
+      m.textContent = '✓ Acción protegida OK — ' + (r.cuando || '');
+    }).catch(function (e) {
+      var m = $('msgHome'); m.className = 'msg err'; m.textContent = (e && e.error) || 'Sesión inválida.';
+    });
+  }
+  function cerrarSesion() { borrarToken(); mostrarLogin(); verModo('pin'); }
+
+  // ---------- arranque ----------
+  (function init() {
+    obtenerDeviceId();
+    if (getToken()) {
+      // Reanuda sesión: valida contra el servidor (device enforcement).
+      apiCall('miPerfil').then(function (p) {
+        if (p.estado === 200) mostrarHome(p.nombre); else { mostrarLogin(); verModo('pin'); }
+      }).catch(function () { mostrarLogin(); verModo('pin'); });
+    } else {
+      mostrarLogin(); verModo('pin');
+    }
+  })();
+</script>
+</body>
+</html>

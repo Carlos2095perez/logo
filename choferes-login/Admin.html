@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es-EC">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Panel Choferes — PRUEBAS</title>
+  <style>
+    :root { --navy:#1a1f35; --navy2:#232a45; --line:#34406b; --verde:#00c853; --rojo:#ff5252; --amber:#ffcf5c; --txt:#eaf0ff; --mut:#9fb0d0; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--navy); color:var(--txt);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; padding:18px; }
+    .badge { display:inline-block; font-size:11px; font-weight:800; letter-spacing:.1em;
+      background:#3a2a00; color:var(--amber); padding:4px 10px; border-radius:999px; }
+    h1 { font-size:20px; margin:10px 0 2px; }
+    .sub { color:var(--mut); font-size:13px; margin:0 0 16px; }
+    .bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+    input, select { padding:11px 13px; font-size:14px; border:1.5px solid var(--line);
+      background:#141a30; color:#fff; border-radius:10px; outline:none; }
+    input:focus, select:focus { border-color:var(--verde); }
+    button { padding:11px 15px; font-size:14px; font-weight:700; border:0; border-radius:10px; cursor:pointer; }
+    .primary { background:var(--verde); color:#06280f; }
+    .ghost { background:#2c3557; color:var(--txt); }
+    .danger { background:#3a1414; color:#ffb4b4; }
+    .warn { background:#3a2a00; color:var(--amber); }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th, td { text-align:left; padding:10px 8px; border-bottom:1px solid #2a3252; vertical-align:top; }
+    th { color:var(--mut); font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
+    .pill { font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; white-space:nowrap; }
+    .on { background:#0f2e1a; color:#9be7b4; } .off { background:#3a1414; color:#ffb4b4; }
+    .ver { background:#0f2e1a; color:#9be7b4; } .nover { background:#3a2a00; color:var(--amber); }
+    .acc { display:flex; gap:6px; flex-wrap:wrap; }
+    .acc button { padding:7px 10px; font-size:12px; }
+    .msg { padding:12px 14px; border-radius:10px; font-size:13.5px; margin:12px 0; display:none; }
+    .msg.err { background:#3a1414; color:#ffb4b4; display:block; }
+    .msg.ok { background:#0f2e1a; color:#9be7b4; display:block; }
+    .card { background:var(--navy2); border-radius:16px; padding:16px; margin-bottom:16px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .grid input { width:100%; }
+    .wrap { overflow-x:auto; }
+    code { background:#141a30; padding:2px 6px; border-radius:6px; color:var(--amber); }
+    .mono { font-family:ui-monospace,Menlo,monospace; font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="badge">🧪 PANEL DE PRUEBAS</div>
+  <h1>Choferes</h1>
+  <p class="sub">Cada acción exige la clave admin. La página no muestra datos hasta que ingreses la clave.</p>
+
+  <div class="bar">
+    <input id="clave" type="password" placeholder="Clave admin" style="min-width:180px;">
+    <button class="primary" onclick="cargar()">Entrar / Refrescar</button>
+  </div>
+
+  <div id="msg" class="msg"></div>
+
+  <div id="panel" style="display:none;">
+    <div class="card">
+      <b>Crear chofer</b>
+      <div class="grid" style="margin-top:10px;">
+        <input id="c_nombre" placeholder="Nombre *">
+        <input id="c_cedula" placeholder="Cédula">
+        <input id="c_correo" placeholder="Correo autorizado">
+        <input id="c_placa" placeholder="Placa">
+        <input id="c_vehiculo" placeholder="Vehículo">
+        <input id="c_ruta" placeholder="Ruta / color">
+      </div>
+      <button class="primary" style="margin-top:12px;" onclick="crear()">+ Crear</button>
+      <div id="pinNuevo" class="msg"></div>
+    </div>
+
+    <div class="wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Nombre</th><th>Correo</th><th>Estado</th><th>Correo</th>
+            <th>Dispositivo</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+  function $(id) { return document.getElementById(id); }
+  function clave() { return $('clave').value.trim(); }
+  function msg(tipo, txt, donde) {
+    var m = $(donde || 'msg'); m.className = 'msg ' + tipo; m.textContent = txt;
+  }
+
+  function llamar(accion, params) {
+    return new Promise(function (resolve, reject) {
+      google.script.run
+        .withSuccessHandler(function (r) { resolve(r || {}); })
+        .withFailureHandler(function (e) { reject({ error: (e && e.message) || 'Error de red' }); })
+        .apiAdmin({ clave: clave(), accion: accion, params: params || {} });
+    });
+  }
+
+  function cargar() {
+    if (!clave()) { msg('err', 'Ingresa la clave admin.'); return; }
+    msg('ok', 'Cargando…');
+    llamar('listado').then(function (r) {
+      if (r.estado !== 200) { msg('err', r.error || 'Clave incorrecta.'); $('panel').style.display = 'none'; return; }
+      msg('ok', 'Cargado. ' + (r.choferes.length) + ' chofer(es).');
+      $('panel').style.display = 'block';
+      pintar(r.choferes);
+    }).catch(function (e) { msg('err', e.error); });
+  }
+
+  function pintar(lista) {
+    var html = '';
+    lista.forEach(function (c) {
+      html += '<tr>' +
+        '<td>' + c.id + '</td>' +
+        '<td>' + esc(c.nombre) + '<div class="mut mono">' + esc(c.placa || '') + '</div></td>' +
+        '<td>' + esc(c.correo || '—') + '</td>' +
+        '<td><span class="pill ' + (c.activo ? 'on' : 'off') + '">' + (c.activo ? 'ACTIVO' : 'INACTIVO') + '</span></td>' +
+        '<td><span class="pill ' + (c.correoVerificado ? 'ver' : 'nover') + '">' + (c.correoVerificado ? 'VERIF.' : 'PENDIENTE') + '</span></td>' +
+        '<td class="mono">' + (c.dispositivoId ? esc(String(c.dispositivoId).slice(0, 8)) + '…' : '<span class="mut">sin atar</span>') + '</td>' +
+        '<td><div class="acc">' +
+          '<button class="warn" onclick="accion(' + c.id + ',\'reiniciarDispositivo\')">Reiniciar disp.</button>' +
+          '<button class="ghost" onclick="accion(' + c.id + ',\'verificarCorreoManual\')">Verif. correo</button>' +
+          '<button class="ghost" onclick="accion(' + c.id + ',\'estado\',{activo:' + (c.activo ? 'false' : 'true') + '})">' + (c.activo ? 'Desactivar' : 'Activar') + '</button>' +
+          '<button class="danger" onclick="accion(' + c.id + ',\'eliminar\')">Borrar</button>' +
+        '</div></td>' +
+      '</tr>';
+    });
+    $('tbody').innerHTML = html || '<tr><td colspan="7" style="color:#9fb0d0">Sin choferes todavía.</td></tr>';
+  }
+
+  function crear() {
+    var nombre = $('c_nombre').value.trim();
+    if (!nombre) { msg('err', 'El nombre es obligatorio.', 'pinNuevo'); return; }
+    msg('ok', 'Creando…', 'pinNuevo');
+    llamar('crear', {
+      nombre: nombre, cedula: $('c_cedula').value.trim(), correo: $('c_correo').value.trim(),
+      placa: $('c_placa').value.trim(), vehiculo: $('c_vehiculo').value.trim(), ruta_color: $('c_ruta').value.trim(),
+    }).then(function (r) {
+      if (r.estado === 200) {
+        msg('ok', '✓ Creado: ' + r.nombre + ' — PIN: ' + r.pin + '  (anótalo)', 'pinNuevo');
+        ['c_nombre','c_cedula','c_correo','c_placa','c_vehiculo','c_ruta'].forEach(function (i) { $(i).value = ''; });
+        cargar();
+      } else { msg('err', r.error || 'No se pudo crear.', 'pinNuevo'); }
+    }).catch(function (e) { msg('err', e.error, 'pinNuevo'); });
+  }
+
+  function accion(id, acc, params) {
+    var confirmaciones = {
+      reiniciarDispositivo: 'Reiniciar dispositivo: el chofer deberá verificar su correo otra vez antes de atar un celular nuevo. ¿Continuar?',
+      eliminar: 'Borrar definitivamente a este chofer. ¿Continuar?',
+      verificarCorreoManual: 'Marcar el correo como verificado sin OTP (válvula de emergencia). ¿Continuar?',
+    };
+    if (confirmaciones[acc] && !confirm(confirmaciones[acc])) return;
+    var p = Object.assign({ id: id }, params || {});
+    llamar(acc, p).then(function (r) {
+      if (r.estado === 200) { msg('ok', '✓ Hecho.'); cargar(); }
+      else { msg('err', r.error || 'No se pudo.'); }
+    }).catch(function (e) { msg('err', e.error); });
+  }
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (m) {
+    return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[m]; }); }
+</script>
+</body>
+</html>
