@@ -45,17 +45,24 @@ Sheets **manteniendo idéntica la lógica de seguridad**.
 
 ## Cómo probar
 
+> El chofer **nunca teclea un PIN ni una clave**. El acceso es uno solo:
+> correo → código (una vez) → dentro para siempre en ese celular. El PIN que
+> ves en el panel es interno/respaldo del admin; no se usa para entrar.
+
 - **Panel admin:** abre `TU_URL_EXEC?page=admin`, ingresa tu `ADMIN_KEY`,
-  crea un chofer de prueba. Te muestra su **PIN**.
-- **Login:** abre `TU_URL_EXEC` (sin `?page=admin`) y entra con ese PIN.
-- **Flujo de correo/OTP:** crea un chofer con **tu** correo, entra por
-  "¿Primera vez? Verifica tu correo", te llega el código por Gmail, verificas
-  y entra.
+  crea un chofer con **tu** correo (así te llega el OTP a ti para probar).
+- **Acceso del chofer (primera vez):** abre `TU_URL_EXEC` (sin `?page=admin`)
+  → escribe ese correo → **Recibir mi código** → llega por Gmail → lo ingresas
+  → entras. Si escribes un correo distinto al configurado, no entra.
+- **Acceso siguiente:** vuelve a abrir la URL → **entra directo**, sin código.
 - **Prueba de la invariante (lo importante):**
-  1. Entra con un PIN en un celular/navegador (queda atado).
+  1. Entra (correo+OTP) en un celular/navegador → queda atado.
   2. En el panel, pulsa **Reiniciar dispositivo** en ese chofer.
-  3. En el celular viejo, cualquier acción siguiente debe **expulsarlo solo**
-     (vuelve al login con "sesión terminó"). Ese es el enforcement global.
+  3. En el celular viejo, la siguiente acción debe **expulsarlo de inmediato**
+     (vuelve a la pantalla de correo con "sesión terminó"). Ese es el bloqueo
+     "al primer descargar contenido".
+  4. Para volver a entrar en un celular nuevo: correo+OTP otra vez (el reinicio
+     lo dejó pendiente de verificar).
 
 ## Notas de seguridad (idénticas al prompt)
 

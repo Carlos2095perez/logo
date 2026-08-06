@@ -285,13 +285,24 @@ function _exigirMismoDispositivo(sesionToken, deviceId) {
   return null;
 }
 
-/** Valida una sesión de chofer para acciones protegidas. */
+/**
+ * Valida una sesión de chofer para acciones protegidas.
+ * Para un chofer CON correo (el caso real), una sesión válida EXIGE:
+ *   - correo verificado (=1)  -> si el admin reinicia el dispositivo, esto
+ *     queda en 0 y el celular viejo se bloquea EN SU PRÓXIMA petición
+ *     (no hay que esperar a que otro celular se vincule).
+ *   - un dispositivo atado que COINCIDA con el de esta request.
+ */
 function _sesionValida(sesionToken, deviceId) {
   const chofer = _buscarPorToken(sesionToken);
   if (!chofer || Number(chofer.activo) !== 1) return null;
   const tieneCorreo = _normCorreo(chofer.correo) !== '';
-  const disp = String(chofer.dispositivo_id || '').trim();
-  if (tieneCorreo && disp && String(deviceId || '').trim() !== disp) return null;
+  if (tieneCorreo) {
+    if (Number(chofer.correo_verificado) !== 1) return null;   // reiniciado/no verificado -> fuera
+    const disp = String(chofer.dispositivo_id || '').trim();
+    if (!disp) return null;                                     // sin vínculo -> no es sesión válida
+    if (String(deviceId || '').trim() !== disp) return null;   // otro celular -> fuera
+  }
   return chofer;
 }
 
@@ -307,7 +318,13 @@ function _solicitarOtp(params) {
     return _r(404, { error: 'Ese correo no está autorizado para ningún chofer' });
   }
   if (Number(chofer.correo_verificado) === 1) {
-    return _r(400, { error: 'Ya fue verificado, usa tu PIN' });
+    // Ya está verificado y atado a un celular. El chofer no teclea códigos ni
+    // PIN: entra solo. Si cambió de celular, el admin debe reiniciar su
+    // dispositivo (eso vuelve a habilitar este flujo de correo+OTP).
+    return _r(400, {
+      yaVerificado: true,
+      error: 'Tu acceso ya está activo en tu celular. Si cambiaste de teléfono, pídele a tu administrador que reinicie tu dispositivo.',
+    });
   }
   const codigo = String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
   const expira = new Date(Date.now() + CONFIG_().OTP_MINUTOS * 60000).toISOString();

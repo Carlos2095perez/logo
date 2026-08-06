@@ -4,7 +4,7 @@
   <base target="_top">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Choferes — Acceso (PRUEBAS)</title>
+  <title>Acceso de choferes (PRUEBAS)</title>
   <style>
     :root { --navy:#1a1f35; --navy2:#232a45; --verde:#00c853; --rojo:#ff5252; --txt:#eaf0ff; --mut:#9fb0d0; }
     * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -16,81 +16,74 @@
     .badge { display:inline-block; font-size:11px; font-weight:800; letter-spacing:.12em;
       background:#3a2a00; color:#ffcf5c; padding:4px 10px; border-radius:999px; margin-bottom:14px; }
     h1 { font-size:19px; margin:0 0 4px; }
-    .sub { color:var(--mut); font-size:13px; margin:0 0 20px; }
+    .sub { color:var(--mut); font-size:13px; margin:0 0 20px; line-height:1.5; }
     label { display:block; font-size:12px; color:var(--mut); margin:14px 0 6px; font-weight:700; }
-    input { width:100%; padding:14px 16px; font-size:20px; text-align:center; letter-spacing:.15em;
-      border:1.5px solid #34406b; background:#141a30; color:#fff; border-radius:12px; outline:none; }
+    input { width:100%; padding:14px 16px; font-size:18px; border:1.5px solid #34406b;
+      background:#141a30; color:#fff; border-radius:12px; outline:none; }
     input:focus { border-color:var(--verde); }
-    input.correo { letter-spacing:normal; font-size:16px; text-align:left; }
+    input.codigo { text-align:center; letter-spacing:.35em; font-size:24px; }
     button { width:100%; margin-top:18px; padding:15px; font-size:16px; font-weight:800;
       border:0; border-radius:12px; cursor:pointer; }
     .primary { background:var(--verde); color:#06280f; }
     .link { background:none; color:var(--mut); font-weight:700; text-decoration:underline; padding:10px; margin-top:8px; font-size:13px; }
-    .msg { margin-top:14px; padding:12px 14px; border-radius:10px; font-size:13.5px; display:none; }
+    .msg { margin-top:14px; padding:12px 14px; border-radius:10px; font-size:13.5px; display:none; line-height:1.5; }
     .msg.err { background:#3a1414; color:#ffb4b4; display:block; }
     .msg.ok  { background:#0f2e1a; color:#9be7b4; display:block; }
     .hidden { display:none; }
-    .home h1 { margin-bottom:12px; }
-    .perfil { background:#141a30; border-radius:12px; padding:16px; font-size:14px; line-height:1.7; }
+    .perfil { background:#141a30; border-radius:12px; padding:16px; font-size:14px; line-height:1.7; margin-top:8px; }
     .perfil b { color:var(--mut); font-weight:700; }
-    .spin { display:inline-block; width:16px; height:16px; border:2px solid rgba(0,0,0,.25);
-      border-top-color:#06280f; border-radius:50%; animation:g .8s linear infinite; vertical-align:-3px; margin-right:8px; }
+    .spin { width:34px; height:34px; border-radius:50%; margin:10px auto;
+      border:3px solid rgba(255,255,255,.2); border-top-color:var(--verde); animation:g .9s linear infinite; }
     @keyframes g { to { transform:rotate(360deg); } }
+    .center { text-align:center; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="badge">🧪 PROYECTO DE PRUEBAS</div>
 
-    <!-- ===== LOGIN (3 modos) ===== -->
-    <div id="login">
-      <!-- modo pin -->
-      <div id="modo-pin">
-        <h1>Ingresa tu PIN</h1>
-        <p class="sub">Escribe tu PIN de 6 dígitos.</p>
-        <label>PIN</label>
-        <input id="pinInput" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="off">
-        <button class="primary" onclick="entrarConPin()">ENTRAR</button>
-        <button class="link" onclick="verModo('correo')">¿Primera vez? Verifica tu correo</button>
-      </div>
-
-      <!-- modo correo -->
-      <div id="modo-correo" class="hidden">
-        <h1>Verifica tu correo</h1>
-        <p class="sub">Te enviaremos un código a tu correo autorizado.</p>
-        <label>Correo</label>
-        <input id="correoInput" class="correo" type="email" inputmode="email" placeholder="tucorreo@gmail.com" autocomplete="off">
-        <button class="primary" onclick="enviarCodigo()">ENVIAR CÓDIGO</button>
-        <button class="link" onclick="verModo('pin')">← Volver a PIN</button>
-      </div>
-
-      <!-- modo otp -->
-      <div id="modo-otp" class="hidden">
-        <h1>Ingresa el código</h1>
-        <p class="sub" id="otpSub">Revisa tu correo.</p>
-        <label>Código de 6 dígitos</label>
-        <input id="otpInput" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="off">
-        <button class="primary" onclick="verificarCodigo()">VERIFICAR</button>
-        <button class="link" onclick="verModo('correo')">Reenviar / cambiar correo</button>
-      </div>
-
-      <div id="msg" class="msg"></div>
+    <!-- ===== Verificando sesión al abrir ===== -->
+    <div id="cargando" class="center">
+      <div class="spin"></div>
+      <p class="sub">Verificando tu acceso…</p>
     </div>
 
-    <!-- ===== HOME (tras login, prueba de sesión protegida) ===== -->
-    <div id="home" class="home hidden">
+    <!-- ===== PASO 1: correo ===== -->
+    <div id="paso-correo" class="hidden">
+      <h1>Acceso de choferes</h1>
+      <p class="sub">Ingresa el correo que te asignó tu administrador. Te enviaremos un código una sola vez.</p>
+      <label>Tu correo</label>
+      <input id="correoInput" type="email" inputmode="email" placeholder="tucorreo@gmail.com" autocomplete="email">
+      <button class="primary" onclick="enviarCodigo()">RECIBIR MI CÓDIGO</button>
+    </div>
+
+    <!-- ===== PASO 2: código (OTP) ===== -->
+    <div id="paso-otp" class="hidden">
+      <h1>Ingresa tu código</h1>
+      <p class="sub" id="otpSub">Revisa tu correo.</p>
+      <label>Código de 6 dígitos</label>
+      <input id="otpInput" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code">
+      <button class="primary" onclick="verificarCodigo()">VERIFICAR Y ENTRAR</button>
+      <button class="link" onclick="verModo('correo')">← Usar otro correo / reenviar</button>
+    </div>
+
+    <!-- ===== Dentro (prueba de sesión protegida) ===== -->
+    <div id="home" class="hidden">
       <h1 id="hola">Hola</h1>
+      <p class="sub">Ya estás dentro. En este celular no tendrás que volver a ingresar ningún código.</p>
       <div class="perfil" id="perfil">Cargando perfil…</div>
       <button class="primary" onclick="probarPing()">Probar acción protegida (ping)</button>
-      <button class="link" onclick="cerrarSesion()">Cerrar sesión</button>
+      <button class="link" onclick="cerrarSesion()">Cerrar sesión (solo pruebas)</button>
       <div id="msgHome" class="msg"></div>
     </div>
+
+    <div id="msg" class="msg"></div>
   </div>
 
 <script>
   // ---------- estado local ----------
   var LS_DEVICE = 'choferes_device_id';
-  var LS_TOKEN  = 'choferes_token';   // el PIN guardado = la sesión durable
+  var LS_TOKEN  = 'choferes_token';   // acceso único durable (interno; el chofer NUNCA lo teclea)
 
   function obtenerDeviceId() {
     var id = localStorage.getItem(LS_DEVICE);
@@ -104,9 +97,7 @@
   function setToken(t) { localStorage.setItem(LS_TOKEN, t); }
   function borrarToken() { localStorage.removeItem(LS_TOKEN); }
 
-  // ---------- wrapper único de llamadas (equivale a apiFetch) ----------
-  // Manda SIEMPRE deviceId; manda sesionToken en llamadas autenticadas.
-  // Ante sesión inválida -> logout local inmediato.
+  // ---------- wrapper único (manda deviceId siempre; se autoexpulsa) ----------
   function apiCall(accion, extra) {
     return new Promise(function (resolve, reject) {
       var sobre = Object.assign({
@@ -116,11 +107,7 @@
       }, extra || {});
       google.script.run
         .withSuccessHandler(function (res) {
-          if (res && res.sesionInvalida) {
-            manejarSesionInvalida(res.error);
-            reject(res);
-            return;
-          }
+          if (res && res.sesionInvalida) { manejarSesionInvalida(res.error); reject(res); return; }
           resolve(res || {});
         })
         .withFailureHandler(function (err) { reject({ error: (err && err.message) || 'Error de red' }); })
@@ -130,75 +117,43 @@
 
   function manejarSesionInvalida(txt) {
     borrarToken();
-    mostrarLogin();
-    verModo('pin');
-    msg('err', txt || 'Tu sesión terminó, contacta a tu administrador.');
+    verModo('correo');
+    msg('err', txt || 'Tu sesión terminó. Contacta a tu administrador.');
   }
 
-  // ---------- UI helpers ----------
+  // ---------- UI ----------
   function $(id) { return document.getElementById(id); }
-  function verModo(m) {
-    ['pin', 'correo', 'otp'].forEach(function (x) { $('modo-' + x).classList.toggle('hidden', x !== m); });
-    limpiarMsg();
-    var focos = { pin: 'pinInput', correo: 'correoInput', otp: 'otpInput' };
-    setTimeout(function () { var el = $(focos[m]); if (el) el.focus(); }, 50);
+  function ocultarTodo() {
+    ['cargando', 'paso-correo', 'paso-otp', 'home'].forEach(function (x) { $(x).classList.add('hidden'); });
   }
+  function verModo(m) {
+    ocultarTodo();
+    if (m === 'correo') { $('paso-correo').classList.remove('hidden'); foco('correoInput'); }
+    else if (m === 'otp') { $('paso-otp').classList.remove('hidden'); foco('otpInput'); }
+    else if (m === 'home') { $('home').classList.remove('hidden'); }
+    else if (m === 'cargando') { $('cargando').classList.remove('hidden'); }
+    limpiarMsg();
+  }
+  function foco(id) { setTimeout(function () { var el = $(id); if (el) el.focus(); }, 60); }
   function msg(tipo, txt) { var m = $('msg'); m.className = 'msg ' + tipo; m.textContent = txt; }
   function limpiarMsg() { var m = $('msg'); m.className = 'msg'; m.textContent = ''; }
-  function cargando(btnTexto) { msg('ok', ''); }
-  function mostrarLogin() { $('login').classList.remove('hidden'); $('home').classList.add('hidden'); }
-  function mostrarHome(nombre) {
-    $('login').classList.add('hidden'); $('home').classList.remove('hidden');
-    $('hola').textContent = 'Hola, ' + (nombre || '');
-    cargarPerfil();
-  }
 
-  // ---------- acciones de login ----------
-  function entrarConPin() {
-    var pin = ($('pinInput').value || '').trim();
-    if (!pin) { msg('err', 'Escribe tu PIN.'); return; }
-    msg('ok', 'Entrando…');
-    // En login el PIN va en el campo 'pin' (no en sesionToken todavía).
-    apiCall('login', { pin: pin, sesionToken: '' }).then(function (res) {
-      manejarRespuestaLogin(res, pin);
-    }).catch(function (e) { msg('err', (e && e.error) || 'No se pudo entrar.'); });
-  }
-
-  function manejarRespuestaLogin(res, pin) {
-    if (res.requiereVerificacion) {
-      // No es un error genérico: manda a verificar el correo.
-      $('correoInput').value = res.correo || '';
-      verModo('otp');
-      $('otpSub').textContent = 'Envía y revisa el código de: ' + (res.correo || 'tu correo');
-      msg('err', res.error || 'Debes verificar tu correo.');
-      // dispara el envío del código automáticamente
-      if (res.correo) enviarCodigoA(res.correo);
-      return;
-    }
-    if (res.dispositivoDistinto) { msg('err', res.error); return; }
-    if (res.estado === 200 && res.pin) {
-      setToken(res.pin);
-      mostrarHome(res.nombre);
-      return;
-    }
-    msg('err', res.error || 'PIN inválido.');
-  }
+  // ---------- flujo correo -> OTP -> dentro ----------
+  var _correo = '';
 
   function enviarCodigo() {
     var correo = ($('correoInput').value || '').trim();
     if (!correo) { msg('err', 'Escribe tu correo.'); return; }
-    enviarCodigoA(correo);
-  }
-  function enviarCodigoA(correo) {
+    _correo = correo;
     msg('ok', 'Enviando código…');
     apiCall('solicitarOtp', { params: { correo: correo }, sesionToken: '' }).then(function (res) {
       if (res.estado === 200) {
         verModo('otp');
-        $('otpSub').textContent = 'Enviamos un código a ' + correo;
-        msg('ok', 'Código enviado. Revisa tu correo.');
-        window._correoOtp = correo;
+        $('otpSub').textContent = 'Enviamos un código a ' + correo + '. Vence en 10 minutos.';
+      } else if (res.yaVerificado) {
+        // Ya tiene acceso pero este celular no lo tiene guardado (reinstaló, etc.)
+        msg('err', res.error);
       } else {
-        verModo('correo');
         msg('err', res.error || 'No se pudo enviar el código.');
       }
     }).catch(function (e) { msg('err', (e && e.error) || 'Error al enviar.'); });
@@ -206,22 +161,34 @@
 
   function verificarCodigo() {
     var codigo = ($('otpInput').value || '').trim();
-    var correo = window._correoOtp || ($('correoInput').value || '').trim();
     if (!codigo) { msg('err', 'Escribe el código.'); return; }
     msg('ok', 'Verificando…');
-    apiCall('verificarOtp', { params: { correo: correo, codigo: codigo }, sesionToken: '' }).then(function (res) {
+    apiCall('verificarOtp', { params: { correo: _correo, codigo: codigo }, sesionToken: '' }).then(function (res) {
       if (res.estado === 200 && res.pin) {
-        // IMPORTANTE: verificar el correo NO ata el dispositivo. Hay que
-        // llamar de una a login con el pin devuelto para completar el vínculo.
+        // Verificar el correo NO ata el dispositivo: hay que llamar de una a
+        // login con el pin devuelto para completar el vínculo (acceso único).
         return apiCall('login', { pin: res.pin, sesionToken: '' }).then(function (r2) {
-          manejarRespuestaLogin(r2, res.pin);
+          if (r2.estado === 200 && r2.pin) {
+            setToken(r2.pin);   // se guarda internamente; el chofer no lo verá nunca más
+            entrar(r2.nombre);
+          } else if (r2.dispositivoDistinto) {
+            msg('err', r2.error);
+          } else {
+            msg('err', r2.error || 'No se pudo completar el acceso.');
+          }
         });
       }
-      msg('err', res.error || 'Código incorrecto.');
+      msg('err', res.error || 'Código incorrecto o vencido.');
     }).catch(function (e) { msg('err', (e && e.error) || 'No se pudo verificar.'); });
   }
 
-  // ---------- home (sesión protegida) ----------
+  function entrar(nombre) {
+    verModo('home');
+    $('hola').textContent = 'Hola, ' + (nombre || '');
+    cargarPerfil();
+  }
+
+  // ---------- dentro (pruebas) ----------
   function cargarPerfil() {
     apiCall('miPerfil').then(function (p) {
       if (p.estado !== 200) { $('perfil').textContent = p.error || 'No se pudo cargar.'; return; }
@@ -234,24 +201,23 @@
   }
   function probarPing() {
     apiCall('ping').then(function (r) {
-      var m = $('msgHome'); m.className = 'msg ok';
-      m.textContent = '✓ Acción protegida OK — ' + (r.cuando || '');
+      var m = $('msgHome'); m.className = 'msg ok'; m.textContent = '✓ Acción protegida OK — ' + (r.cuando || '');
     }).catch(function (e) {
       var m = $('msgHome'); m.className = 'msg err'; m.textContent = (e && e.error) || 'Sesión inválida.';
     });
   }
-  function cerrarSesion() { borrarToken(); mostrarLogin(); verModo('pin'); }
+  function cerrarSesion() { borrarToken(); verModo('correo'); }
 
-  // ---------- arranque ----------
+  // ---------- arranque: si ya tiene acceso en este celular, entra directo ----------
   (function init() {
     obtenerDeviceId();
+    verModo('cargando');
     if (getToken()) {
-      // Reanuda sesión: valida contra el servidor (device enforcement).
       apiCall('miPerfil').then(function (p) {
-        if (p.estado === 200) mostrarHome(p.nombre); else { mostrarLogin(); verModo('pin'); }
-      }).catch(function () { mostrarLogin(); verModo('pin'); });
+        if (p.estado === 200) entrar(p.nombre); else verModo('correo');
+      }).catch(function () { /* sesionInvalida ya llevó a 'correo' */ });
     } else {
-      mostrarLogin(); verModo('pin');
+      verModo('correo');
     }
   })();
 </script>
