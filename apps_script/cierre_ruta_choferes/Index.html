@@ -2024,19 +2024,15 @@ function _posActual() {
   return null;
 }
 
-// La siguiente parada es SIEMPRE la pendiente MÁS CERCANA a donde estás,
-// no la que toque por orden fijo. Así no te manda lejos y luego te regresa.
+// La siguiente parada es la primera pendiente en el ORDEN FIJO de la lista
+// (orden calculado en el servidor por cercanía a la bodega). Se revirtió el
+// reordenamiento dinámico por GPS: hacía zigzaguear la ruta y el trazo pasaba
+// por media manzana / contravía. Volvemos a "lo que teníamos".
 function siguienteParadaPendiente() {
   if (!despachoData) return null;
-  var pend = despachoData.paradas.filter(function(x){ return !x.entregado && !x.pospuesto && x.lat && x.lng; });
-  if (!pend.length) pend = despachoData.paradas.filter(function(x){ return !x.entregado && x.lat && x.lng; });
-  if (!pend.length) return null;
-  var pos = _posActual();
-  if (!pos) return pend[0];
-  pend.sort(function(a, b){
-    return distanciaMetros(pos.lat, pos.lng, a.lat, a.lng) - distanciaMetros(pos.lat, pos.lng, b.lat, b.lng);
-  });
-  return pend[0];
+  return despachoData.paradas.find(function(x){ return !x.entregado && !x.pospuesto && x.lat && x.lng; })
+      || despachoData.paradas.find(function(x){ return !x.entregado && x.lat && x.lng; })
+      || null;
 }
 
 // Reordena la LISTA visible por cercanía a tu posición (pendientes primero,
@@ -2060,19 +2056,9 @@ function reordenarListaPorCercania() {
 }
 
 function iniciarRuta() {
-  // Toma tu posición real al arrancar para elegir la parada más cercana.
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      function(pos){ despachoUltimaPos = { lat: pos.coords.latitude, lng: pos.coords.longitude, t: Date.now() }; _arrancarRuta(); },
-      function(){ _arrancarRuta(); },
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 6000 }
-    );
-  } else { _arrancarRuta(); }
-}
-function _arrancarRuta() {
-  reordenarListaPorCercania();
   var siguiente = siguienteParadaPendiente();
-  if (siguiente) activarNavHaciaParada(siguiente);
+  if (!siguiente) return;
+  activarNavHaciaParada(siguiente);
 }
 
 // Muestra/oculta las 3 capas de la ruta de navegación (borde, línea, flujo).
@@ -2444,7 +2430,6 @@ function marcarEntregadoActual(fila, cliente, factura) {
     [SD.token, SD.color, SD.ruta, fila, cliente, factura, true],
     function(e, red) { if (!red) err(e); });
 
-  reordenarListaPorCercania(); // recalcula el orden por cercanía a tu posición actual
   var siguiente = siguienteParadaPendiente();
   if (siguiente) {
     activarNavHaciaParada(siguiente);
