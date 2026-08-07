@@ -4,7 +4,7 @@
  * Apps Script (es de otro origen y sus respuestas son opacas): esa siempre va
  * a la red, igual que hoy. El offline real de los datos es una fase posterior.
  */
-const CACHE = 'cierre-ruta-shell-v1';
+const CACHE = 'cierre-ruta-shell-v2';
 const SHELL = [
   './',
   './index.html',
