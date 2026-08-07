@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es-EC">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Chóferes INDUYES</title>
+  <meta name="theme-color" content="#1a1f35" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Chóferes INDUYES" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <style>
+    :root { --navy:#1a1f35; --navy2:#232a45; --verde:#00c853; --txt:#eaf0ff; --mut:#9fb0d0; }
+    * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html,body { margin:0; min-height:100vh; background:var(--navy); color:var(--txt);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+    body { display:flex; align-items:center; justify-content:center; padding:24px; }
+    .card { width:100%; max-width:360px; background:var(--navy2); border-radius:20px;
+      padding:26px 22px; box-shadow:0 12px 40px rgba(0,0,0,.4); }
+    .logo { width:76px; height:76px; border-radius:18px; display:block; margin:0 auto 14px; }
+    h1 { font-size:19px; margin:0 0 4px; text-align:center; }
+    .sub { color:var(--mut); font-size:13px; margin:0 0 18px; line-height:1.5; text-align:center; }
+    label { display:block; font-size:12px; color:var(--mut); margin:14px 0 6px; font-weight:700; }
+    input { width:100%; padding:14px 16px; font-size:18px; border:1.5px solid #34406b;
+      background:#141a30; color:#fff; border-radius:12px; outline:none; }
+    input:focus { border-color:var(--verde); }
+    input.codigo { text-align:center; letter-spacing:.35em; font-size:24px; }
+    button { width:100%; margin-top:18px; padding:15px; font-size:16px; font-weight:800;
+      border:0; border-radius:12px; cursor:pointer; background:var(--verde); color:#06280f; }
+    .link { background:none; color:var(--mut); font-weight:700; text-decoration:underline; padding:10px; margin-top:6px; font-size:13px; }
+    .msg { margin-top:14px; padding:12px 14px; border-radius:10px; font-size:13.5px; display:none; line-height:1.5; }
+    .msg.err { background:#3a1414; color:#ffb4b4; display:block; }
+    .msg.ok { background:#0f2e1a; color:#9be7b4; display:block; }
+    .hidden { display:none; }
+    .perfil { background:#141a30; border-radius:12px; padding:16px; font-size:14px; line-height:1.7; margin-top:8px; }
+    .perfil b { color:var(--mut); font-weight:700; }
+    .spin { width:34px; height:34px; border-radius:50%; margin:10px auto;
+      border:3px solid rgba(255,255,255,.2); border-top-color:var(--verde); animation:g .9s linear infinite; }
+    @keyframes g { to { transform:rotate(360deg); } }
+    #btnInstalar { display:none; margin-top:8px; background:#2c3557; color:var(--txt); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img class="logo" src="icons/icon-192.png" alt="INDUYES" />
+
+    <div id="cargando" style="text-align:center">
+      <div class="spin"></div><p class="sub">Verificando tu acceso…</p>
+    </div>
+
+    <!-- correo -->
+    <div id="paso-correo" class="hidden">
+      <h1>Chóferes INDUYES</h1>
+      <p class="sub">Ingresa el correo que te asignó tu administrador. Te enviaremos un código una sola vez.</p>
+      <label>Tu correo</label>
+      <input id="correoInput" type="email" inputmode="email" placeholder="tucorreo@gmail.com" autocomplete="email">
+      <button onclick="enviarCodigo()">RECIBIR MI CÓDIGO</button>
+    </div>
+
+    <!-- otp -->
+    <div id="paso-otp" class="hidden">
+      <h1>Ingresa tu código</h1>
+      <p class="sub" id="otpSub">Revisa tu correo.</p>
+      <label>Código de 6 dígitos</label>
+      <input id="otpInput" class="codigo" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code">
+      <button onclick="verificarCodigo()">VERIFICAR Y ENTRAR</button>
+      <button class="link" onclick="verModo('correo')">← Usar otro correo</button>
+    </div>
+
+    <!-- dentro -->
+    <div id="home" class="hidden">
+      <h1 id="hola">Hola</h1>
+      <p class="sub">Ya estás dentro. En este celular no tendrás que volver a ingresar ningún código.</p>
+      <div class="perfil" id="perfil">Cargando…</div>
+      <button onclick="probarPing()">Probar acción protegida</button>
+      <button id="btnInstalar" onclick="instalar()">⬇ Instalar app</button>
+      <button class="link" onclick="cerrarSesion()">Cerrar sesión (pruebas)</button>
+      <div id="msgHome" class="msg"></div>
+    </div>
+
+    <div id="msg" class="msg"></div>
+  </div>
+
+<script>
+  // ====== CONFIG: URL de la API (backend Apps Script) ======
+  var API = "https://script.google.com/macros/s/AKfycbwcUVrSYNc-EdCEc0h4fVkfeYc7yK7YGZ47sLo2RGxBo6RMrLRfCJuzSOmdIL3UjscBsQ/exec";
+
+  var LS_DEVICE = 'induyes_device_id', LS_TOKEN = 'induyes_token';
+  function getDevice(){ var id=localStorage.getItem(LS_DEVICE); if(!id){ id=(crypto.randomUUID?crypto.randomUUID():(Date.now()+'-'+Math.random())); localStorage.setItem(LS_DEVICE,id);} return id; }
+  function getToken(){ return localStorage.getItem(LS_TOKEN)||''; }
+  function setToken(t){ localStorage.setItem(LS_TOKEN,t); }
+  function borrarToken(){ localStorage.removeItem(LS_TOKEN); }
+
+  // Petición "simple" (text/plain) para evitar el preflight de CORS.
+  async function apiCall(accion, extra){
+    var sobre = Object.assign({ accion:accion, deviceId:getDevice(), sesionToken:getToken() }, extra||{});
+    var r = await fetch(API, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(sobre) });
+    var res = await r.json();
+    if (res && res.sesionInvalida){ manejarSesionInvalida(res.error); throw res; }
+    return res;
+  }
+  function manejarSesionInvalida(t){ borrarToken(); verModo('correo'); msg('err', t||'Tu sesión terminó. Contacta a tu administrador.'); }
+
+  function $(id){ return document.getElementById(id); }
+  function ocultar(){ ['cargando','paso-correo','paso-otp','home'].forEach(function(x){ $(x).classList.add('hidden'); }); }
+  function verModo(m){ ocultar();
+    if(m==='correo'){ $('paso-correo').classList.remove('hidden'); foco('correoInput'); }
+    else if(m==='otp'){ $('paso-otp').classList.remove('hidden'); foco('otpInput'); }
+    else if(m==='home'){ $('home').classList.remove('hidden'); }
+    else if(m==='cargando'){ $('cargando').classList.remove('hidden'); }
+    limpiar();
+  }
+  function foco(id){ setTimeout(function(){ var e=$(id); if(e) e.focus(); },60); }
+  function msg(t,x){ var m=$('msg'); m.className='msg '+t; m.textContent=x; }
+  function limpiar(){ var m=$('msg'); m.className='msg'; m.textContent=''; }
+
+  var _correo='';
+  function enviarCodigo(){
+    var c=($('correoInput').value||'').trim(); if(!c){ msg('err','Escribe tu correo.'); return; }
+    _correo=c; msg('ok','Enviando código…');
+    apiCall('solicitarOtp',{ params:{correo:c}, sesionToken:'' }).then(function(res){
+      if(res.estado===200){ verModo('otp'); $('otpSub').textContent='Enviamos un código a '+c+'. Vence en 10 min.'; }
+      else { msg('err', res.error||'No se pudo enviar.'); }
+    }).catch(function(e){ msg('err',(e&&e.error)||'Error de red.'); });
+  }
+  function verificarCodigo(){
+    var cod=($('otpInput').value||'').trim(); if(!cod){ msg('err','Escribe el código.'); return; }
+    msg('ok','Verificando…');
+    apiCall('verificarOtp',{ params:{correo:_correo,codigo:cod}, sesionToken:'' }).then(function(res){
+      if(res.estado===200 && res.pin){
+        return apiCall('login',{ pin:res.pin, sesionToken:'' }).then(function(r2){
+          if(r2.estado===200 && r2.pin){ setToken(r2.pin); entrar(r2.nombre); }
+          else if(r2.dispositivoDistinto){ msg('err', r2.error); }
+          else { msg('err', r2.error||'No se pudo completar el acceso.'); }
+        });
+      }
+      msg('err', res.error||'Código incorrecto o vencido.');
+    }).catch(function(e){ msg('err',(e&&e.error)||'No se pudo verificar.'); });
+  }
+  function entrar(nombre){ verModo('home'); $('hola').textContent='Hola, '+(nombre||''); cargarPerfil(); }
+  function cargarPerfil(){
+    apiCall('miPerfil').then(function(p){
+      if(p.estado!==200){ $('perfil').textContent=p.error||'No se pudo cargar.'; return; }
+      $('perfil').innerHTML='<div><b>Nombre:</b> '+(p.nombre||'')+'</div><div><b>Correo:</b> '+(p.correo||'—')+'</div><div><b>Ruta:</b> '+(p.rutaColor||'—')+'</div><div><b>Placa:</b> '+(p.placa||'—')+'</div>';
+    }).catch(function(){});
+  }
+  function probarPing(){
+    apiCall('ping').then(function(r){ var m=$('msgHome'); m.className='msg ok'; m.textContent='✓ Acción protegida OK — '+(r.cuando||''); })
+    .catch(function(e){ var m=$('msgHome'); m.className='msg err'; m.textContent=(e&&e.error)||'Sesión inválida.'; });
+  }
+  function cerrarSesion(){ borrarToken(); verModo('correo'); }
+
+  // ---- PWA: service worker + instalar ----
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js').catch(function(){});
+  var _deferred=null;
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); _deferred=e; var b=$('btnInstalar'); if(b) b.style.display='block'; });
+  function instalar(){ if(!_deferred) return; _deferred.prompt(); _deferred.userChoice.finally(function(){ _deferred=null; $('btnInstalar').style.display='none'; }); }
+
+  // ---- arranque: si ya tiene acceso, entra directo ----
+  (function init(){
+    getDevice(); verModo('cargando');
+    if(getToken()){
+      apiCall('miPerfil').then(function(p){ if(p.estado===200) entrar(p.nombre); else verModo('correo'); })
+      .catch(function(){ verModo('correo'); });
+    } else { verModo('correo'); }
+  })();
+</script>
+</body>
+</html>

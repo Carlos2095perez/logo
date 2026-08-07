@@ -99,8 +99,19 @@ function crearChoferDePrueba() {
 
 function _hoja_(crearSiFalta) {
   const cfg = CONFIG_();
-  const ss = cfg.HOJA_ID ? SpreadsheetApp.openById(cfg.HOJA_ID) : SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss) throw new Error('No hay hoja de cálculo. Setea CHOFERES_HOJA_ID en Script Properties o vincula el proyecto a una hoja.');
+  let ss = null;
+  if (cfg.HOJA_ID) {
+    ss = SpreadsheetApp.openById(cfg.HOJA_ID);
+  } else {
+    ss = SpreadsheetApp.getActiveSpreadsheet();
+    // Proyecto standalone (API): si no hay hoja vinculada, crea una propia y
+    // recuerda su ID en Script Properties.
+    if (!ss && crearSiFalta) {
+      ss = SpreadsheetApp.create('Chóferes INDUYES - DATOS');
+      PROPS.setProperty('CHOFERES_HOJA_ID', ss.getId());
+    }
+  }
+  if (!ss) throw new Error('No hay hoja de cálculo. Corre inicializarSistemaChoferes() una vez.');
   let hoja = ss.getSheetByName(HOJA_NOMBRE);
   if (!hoja && crearSiFalta) hoja = ss.insertSheet(HOJA_NOMBRE);
   if (!hoja) throw new Error('No existe la pestaña ' + HOJA_NOMBRE + '. Corre inicializarSistemaChoferes() primero.');
@@ -533,13 +544,28 @@ function apiAdmin(sobre) {
 // doGet — sirve la pantalla de login o el panel admin
 // ============================================================
 
+// La app NATIVA vive en GitHub Pages y le habla a esta API por doPost.
+// doGet solo responde un "estoy vivo" (útil para probar el deployment).
 function doGet(e) {
-  const page = e && e.parameter && e.parameter.page;
-  const archivo = (page === 'admin') ? 'Admin' : 'Index';
-  return HtmlService.createHtmlOutputFromFile(archivo)
-    .setTitle('Chóferes INDUYES' + (page === 'admin' ? ' — Panel' : ''))
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+  return ContentService
+    .createTextOutput(JSON.stringify({ ok: true, servicio: 'Chóferes INDUYES API' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Punto de entrada de la API para el frontend (GitHub Pages).
+ * El frontend hace POST con Content-Type text/plain (petición "simple", sin
+ * preflight de CORS) y el cuerpo es el JSON del "sobre".
+ *   - sobre.ruta === 'admin'  -> gateway admin (exige clave)
+ *   - resto                   -> gateway de chofer (login/otp/protegidas)
+ */
+function doPost(e) {
+  var sobre = {};
+  try { sobre = JSON.parse((e && e.postData && e.postData.contents) || '{}'); } catch (_) {}
+  var res = (sobre && sobre.ruta === 'admin') ? apiAdmin(sobre) : api(sobre);
+  return ContentService
+    .createTextOutput(JSON.stringify(res))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 // ============================================================
