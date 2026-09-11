@@ -406,6 +406,12 @@
     .btn-secundario-accion { flex:1; min-width:0; background:rgba(255,255,255,0.08); color:#c7cde0; border:1.5px solid rgba(255,255,255,0.18); border-radius:11px; padding:9px 6px; font-weight:700; font-size:12px; }
     .btn-secundario-accion:active { background:rgba(255,255,255,0.16); }
     .parada-card.nav-actual { box-shadow:0 0 0 2px #ff6d00, 0 2px 8px rgba(255,109,0,0.25); }
+    /* Reordenar manual: flechas ↑/↓ + manija de arrastre */
+    .parada-reord { display:flex; flex-direction:column; gap:3px; flex-shrink:0; }
+    .preord { width:36px; height:27px; border:1px solid #dde3f0; background:#f5f8ff; color:#2962ff; border-radius:7px; font-size:12px; font-weight:900; cursor:pointer; line-height:1; padding:0; }
+    .preord:active { background:#dbe6ff; transform:scale(0.94); }
+    .parada-drag { flex-shrink:0; width:30px; text-align:center; color:#9aa7bd; font-size:22px; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none; padding:8px 2px; }
+    .parada-card.arrastrando { opacity:0.9; box-shadow:0 10px 26px rgba(0,0,0,0.28); position:relative; z-index:30; background:#fff; }
     .btn-marcar-directo { background:#e2e8f0; color:#475569; border:none; border-radius:8px; padding:8px 12px; font-weight:700; font-size:12px; flex-shrink:0; }
     .btn-marcar-directo.on { background:#00a844; color:white; }
     .btn-reabrir { background:#fff3e0; color:#e65100; border:1px solid #ffcc80; border-radius:8px; padding:8px 11px; font-weight:800; font-size:12px; flex-shrink:0; cursor:pointer; }
@@ -1877,7 +1883,7 @@ function formatHora(d) {
 // offset positivo en Y = el centro (mi flecha) se dibuja más abajo.
 function offsetSeguimiento() {
   var h = (despachoMapa && despachoMapa.getContainer) ? despachoMapa.getContainer().clientHeight : 0;
-  return [0, Math.round(h * 0.22)];
+  return [0, Math.round(h * 0.31)];
 }
 
 var despachoResumeTimer = null;
@@ -1904,7 +1910,8 @@ function centrarMapa() {
   document.getElementById('btnCentrar').classList.add('hidden');
   if (despachoMiUbicacionMarker && despachoMapa) {
     var ll = despachoMiUbicacionMarker.getLngLat();
-    despachoMapa.easeTo({ center: [ll.lng, ll.lat], bearing: despachoBearing, zoom: 18, offset: offsetSeguimiento(), duration: 600 });
+    var _z = _zoomObjetivo(); _segZoom = _z;
+    despachoMapa.easeTo({ center: [ll.lng, ll.lat], bearing: despachoBearing, zoom: _z, offset: offsetSeguimiento(), duration: 600 });
   }
 }
 
@@ -1915,10 +1922,21 @@ function crearParadaCard(p) {
   // Si está entregada o reagendada/incidencia, se muestra "Reabrir" para
   // devolverla a pendiente (p. ej. si se marcó por error).
   var reseteable = p.entregado || p.pospuesto;
+  var reorderable = !p.entregado && !p.pospuesto;
   var lblReabrir = p.entregado ? '↺ Reabrir' : '↺ Reactivar';
-  var derecha = reseteable
-    ? '<button class="btn-reabrir" onclick="reabrirParada(' + p.fila + ',\'' + escapeAttr(p.cliente) + '\',\'' + escapeAttr(p.factura) + '\',event)">' + lblReabrir + '</button>'
-    : '<div class="parada-chevron">›</div>';
+  var derecha;
+  if (reseteable) {
+    derecha = '<button class="btn-reabrir" onclick="reabrirParada(' + p.fila + ',\'' + escapeAttr(p.cliente) + '\',\'' + escapeAttr(p.factura) + '\',event)">' + lblReabrir + '</button>';
+  } else if (reorderable) {
+    // Flechas ↑/↓ para reordenar + manija para arrastrar. El chofer manda.
+    derecha = '<div class="parada-reord">' +
+        '<button class="preord" onclick="moverParada(' + p.fila + ',-1,event)" aria-label="Subir">▲</button>' +
+        '<button class="preord" onclick="moverParada(' + p.fila + ',1,event)" aria-label="Bajar">▼</button>' +
+      '</div>' +
+      '<div class="parada-drag" title="Arrastrar para reordenar">≡</div>';
+  } else {
+    derecha = '<div class="parada-chevron">›</div>';
+  }
   card.innerHTML =
     '<div class="parada-num">' + (p.entregado ? '✓' : p.orden) + '</div>' +
     '<div class="parada-info">' +
@@ -1926,7 +1944,98 @@ function crearParadaCard(p) {
       '<div class="parada-sub">' + p.factura + ' · ' + fmt(p.valor) + ' · ' + p.distanciaKm.toFixed(1) + ' km' + (p.pospuesto ? ' · pospuesto' : '') + '</div>' +
     '</div>' + derecha;
   card.onclick = function() { if (!p.entregado) activarNavHaciaParada(p); };
+  if (reorderable) {
+    var handle = card.querySelector('.parada-drag');
+    if (handle) handle.addEventListener('pointerdown', function(ev) { _iniciarArrastre(ev, p.fila); });
+  }
   return card;
+}
+
+// ---- Reordenar manual de paradas (↑/↓ y arrastre) ----
+// Reordena SOLO las pendientes; entregadas/pospuestas conservan su lugar.
+function moverParada(fila, dir, ev) {
+  if (ev) ev.stopPropagation();
+  if (!despachoData) return;
+  var pend = despachoData.paradas.filter(function(p){ return !p.entregado && !p.pospuesto; });
+  var idx = pend.findIndex(function(p){ return p.fila === fila; });
+  if (idx < 0) return;
+  var ni = idx + dir;
+  if (ni < 0 || ni >= pend.length) return;
+  var tmp = pend[idx]; pend[idx] = pend[ni]; pend[ni] = tmp;
+  _aplicarOrdenPendientes(pend);
+}
+
+// Reinserta el nuevo orden de pendientes en los "huecos" de pendientes,
+// dejando entregadas/pospuestas en su posición absoluta.
+function _aplicarOrdenPendientes(nuevoPend) {
+  var qi = 0;
+  despachoData.paradas = despachoData.paradas.map(function(p){
+    return (!p.entregado && !p.pospuesto) ? nuevoPend[qi++] : p;
+  });
+  _renumerarYRepintar();
+}
+
+function _renumerarYRepintar() {
+  var n = 0;
+  despachoData.paradas.forEach(function(p){ p.orden = ++n; });
+  var div = document.getElementById('despachoParadas');
+  if (div) { div.innerHTML = ''; despachoData.paradas.forEach(function(p){ div.appendChild(crearParadaCard(p)); }); }
+  // Números en el mapa + popups
+  despachoData.paradas.forEach(function(p){
+    if (despachoMarcadores[p.fila]) {
+      actualizarIconoParada(p.fila, p, false);
+      try { despachoMarcadores[p.fila].setPopup(new maplibregl.Popup({ offset: 14, closeButton: false }).setText(p.orden + '. ' + p.cliente)); } catch (e) {}
+    }
+  });
+  // Línea de plan (punteada) en el nuevo orden
+  if (despachoMapa && despachoMapa.getSource && despachoMapa.getSource('ruta-plan') && despachoData.bodega) {
+    var coords = [[despachoData.bodega.lng, despachoData.bodega.lat]];
+    despachoData.paradas.forEach(function(p){ if (p.lat && p.lng) coords.push([p.lng, p.lat]); });
+    despachoMapa.getSource('ruta-plan').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: coords } });
+  }
+}
+
+var _drag = null;
+function _iniciarArrastre(ev, fila) {
+  ev.preventDefault(); ev.stopPropagation();
+  var card = document.getElementById('parada_' + fila);
+  if (!card) return;
+  _drag = { fila: fila, card: card, startY: ev.clientY, moved: false, handle: ev.currentTarget, pid: ev.pointerId };
+  try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+  ev.currentTarget.addEventListener('pointermove', _arrastrarMove);
+  ev.currentTarget.addEventListener('pointerup', _arrastrarUp);
+  ev.currentTarget.addEventListener('pointercancel', _arrastrarUp);
+}
+function _arrastrarMove(ev) {
+  if (!_drag) return;
+  ev.preventDefault();
+  _drag.moved = true;
+  _drag.card.classList.add('arrastrando');
+  _drag.card.style.transform = 'translateY(' + (ev.clientY - _drag.startY) + 'px)';
+}
+function _arrastrarUp(ev) {
+  if (!_drag) return;
+  var h = _drag.handle;
+  h.removeEventListener('pointermove', _arrastrarMove);
+  h.removeEventListener('pointerup', _arrastrarUp);
+  h.removeEventListener('pointercancel', _arrastrarUp);
+  _drag.card.classList.remove('arrastrando');
+  _drag.card.style.transform = '';
+  if (_drag.moved && despachoData) {
+    var y = ev.clientY;
+    var pend = despachoData.paradas.filter(function(p){ return !p.entregado && !p.pospuesto; });
+    var movido = pend.find(function(p){ return p.fila === _drag.fila; });
+    var otros = pend.filter(function(p){ return p.fila !== _drag.fila; });
+    var destino = otros.length;
+    for (var i = 0; i < otros.length; i++) {
+      var el = document.getElementById('parada_' + otros[i].fila);
+      if (!el) continue;
+      var r = el.getBoundingClientRect();
+      if (y < r.top + r.height / 2) { destino = i; break; }
+    }
+    if (movido) { otros.splice(destino, 0, movido); _aplicarOrdenPendientes(otros); }
+  }
+  _drag = null;
 }
 
 // Devuelve una parada entregada o reagendada/incidencia a PENDIENTE.
@@ -2284,6 +2393,18 @@ function formatDist(m) {
 // cámara en cada lectura, se desliza suave hacia la posición objetivo a
 // ~60 fps. _segRender = posición mostrada, _segTarget = última del GPS.
 var _segRender = null, _segTarget = null, _segRAF = null, _segOffsetCache = [0, 0];
+var _segZoom = 18;   // zoom suavizado de la cámara de seguimiento
+
+// Zoom objetivo: hace "close-up" al acercarse a un giro/maniobra (como Google
+// Maps), y en recta se abre un poco para ver más hacia adelante.
+function _zoomObjetivo() {
+  var base = 17.7;
+  if (!_segTarget || !despachoManiobra || !despachoManiobra.lat) return base;
+  var d = distanciaMetros(_segTarget.lat, _segTarget.lng, despachoManiobra.lat, despachoManiobra.lng);
+  if (d < 45) return 19;      // en el giro / intersección: bien de cerca
+  if (d < 100) return 18.4;   // acercándose
+  return base;                // recta
+}
 var despachoAncla = null; // punto de referencia para calcular el rumbo
 
 function _recalcOffsetSeg() { _segOffsetCache = offsetSeguimiento(); }
@@ -2299,12 +2420,15 @@ function _arrancarSeguimientoRAF() {
     var db = ((_segTarget.bearing - _segRender.bearing + 540) % 360) - 180;
     _segRender.bearing += db * k;
     if (despachoMiUbicacionMarker) despachoMiUbicacionMarker.setLngLat([_segRender.lng, _segRender.lat]);
+    var _zt = _zoomObjetivo();
+    _segZoom += (_zt - _segZoom) * 0.06;   // suavizado del zoom (close-up en giros)
     if (despachoSeguimiento) {
-      despachoMapa.easeTo({ center: [_segRender.lng, _segRender.lat], bearing: _segRender.bearing, offset: _segOffsetCache, duration: 0 });
+      despachoMapa.easeTo({ center: [_segRender.lng, _segRender.lat], bearing: _segRender.bearing, zoom: _segZoom, offset: _segOffsetCache, duration: 0 });
     }
     var lejos = Math.abs(_segTarget.lat - _segRender.lat) > 2e-7 ||
                 Math.abs(_segTarget.lng - _segRender.lng) > 2e-7 ||
-                Math.abs(db) > 0.3;
+                Math.abs(db) > 0.3 ||
+                Math.abs(_zt - _segZoom) > 0.02;
     if (lejos) _segRAF = requestAnimationFrame(loop); // sigue mientras no converja
   };
   _segRAF = requestAnimationFrame(loop);

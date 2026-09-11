@@ -34,7 +34,9 @@ const CONFIG = {
     'DA375': 'DAVID AÑARUMBA',
     'NI195': 'NELSON INGA',
     'MC392': 'MARVIN CASTILLO',
-    'CP156': 'CARLOS PEREZ'
+    'CP156': 'CARLOS PEREZ',
+    'KF943': 'KENNYN FAJARDO',
+    'ET291': 'EDISON TIPAN'
   },
   correoDestino: 'bodega.yes@gmail.com',
   duracionSesionSegundos: 21600, // 6 horas (máximo permitido por CacheService)
@@ -365,6 +367,104 @@ function _ordenarPorCercania(origen, paradas) {
   return ordenadas;
 }
 
+// Convierte el texto de fecha 'dd/MM/yyyy' (o un Date) a Date. null si falla.
+function _parseFecha(txt) {
+  if (txt instanceof Date) return txt;
+  const m = String(txt).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (m) return new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+  const d = new Date(txt);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+// ============================================
+// ORDEN APRENDIDO — la app aprende del historial real de entregas.
+// Para el mismo COLOR y mismo DÍA DE LA SEMANA, mira cómo se entregó en
+// semanas anteriores (orden real por hora), da más peso a lo reciente y
+// arma un orden consenso. Los clientes nuevos (sin historia) se insertan
+// por cercanía. Si no hay suficiente historia, cae al orden por cercanía.
+// El chofer siempre puede reordenar a mano (eso alimenta el aprendizaje).
+// ============================================
+function _ordenAprendido(color, paradas) {
+  const fallback = function() { return _ordenarPorCercania(CONFIG.bodega, paradas); };
+  try {
+    const ss = _obtenerHojaAuxiliar();
+    const sheet = ss.getSheetByName('HISTORIAL_DESPACHO');
+    if (!sheet || sheet.getLastRow() < 2) return fallback();
+
+    const diaHoy = new Date().getDay(); // 0=domingo .. 6=sábado
+    const data = sheet.getDataRange().getValues();
+
+    // Agrupar entregas ENTREGADAS por fecha (mismo color y mismo día de semana).
+    const dias = {}; // 'yyyy-MM-dd' -> [{cliente, hora}]
+    for (let i = 1; i < data.length; i++) {
+      const estado = data[i][8];
+      if (estado !== 'ENTREGADO' || data[i][3] !== color) continue;
+      const fecha = _parseFecha(data[i][0]);
+      if (!fecha || fecha.getDay() !== diaHoy) continue;
+      const key = Utilities.formatDate(fecha, 'America/Guayaquil', 'yyyy-MM-dd');
+      (dias[key] = dias[key] || []).push({ cliente: data[i][5], hora: String(data[i][1]) });
+    }
+
+    const fechas = Object.keys(dias).sort(); // ascendente (viejo -> reciente)
+    if (fechas.length < 2) return fallback(); // poca historia: mejor cercanía
+
+    // Posición fraccional (0..1) por cliente en cada día, ponderada por recencia.
+    const score = {}; // norm -> { suma, peso }
+    fechas.forEach(function(key, idx) {
+      const lista = dias[key].slice().sort(function(a, b) {
+        return a.hora < b.hora ? -1 : (a.hora > b.hora ? 1 : 0);
+      });
+      const n = lista.length;
+      const semanasAtras = fechas.length - 1 - idx;
+      const peso = Math.pow(0.85, semanasAtras); // decae ~15% por semana
+      lista.forEach(function(e, pos) {
+        const frac = n > 1 ? pos / (n - 1) : 0;
+        const norm = _normalizarNombreCliente(e.cliente);
+        if (!norm) return;
+        if (!score[norm]) score[norm] = { suma: 0, peso: 0 };
+        score[norm].suma += frac * peso;
+        score[norm].peso += peso;
+      });
+    });
+
+    const posAprendida = {};
+    Object.keys(score).forEach(function(norm) {
+      posAprendida[norm] = score[norm].suma / score[norm].peso;
+    });
+
+    // Separar: paradas con historia (van en orden aprendido) vs nuevas.
+    const conHist = [], nuevas = [];
+    paradas.forEach(function(p) {
+      const norm = _normalizarNombreCliente(p.cliente);
+      if (posAprendida[norm] !== undefined) { p._pa = posAprendida[norm]; conHist.push(p); }
+      else nuevas.push(p);
+    });
+    if (!conHist.length) return fallback();
+    conHist.sort(function(a, b) { return a._pa - b._pa; });
+
+    // Insertar cada cliente nuevo junto a su vecino más cercano de la secuencia.
+    nuevas.forEach(function(nv) {
+      let mejorIdx = conHist.length, mejorDist = Infinity;
+      for (let i = 0; i < conHist.length; i++) {
+        const d = _distanciaKm(nv.lat, nv.lng, conHist[i].lat, conHist[i].lng);
+        if (d < mejorDist) { mejorDist = d; mejorIdx = i + 1; }
+      }
+      conHist.splice(mejorIdx, 0, nv);
+    });
+
+    // Distancia acumulada (para mostrar km en cada tarjeta) y limpieza.
+    let actual = CONFIG.bodega;
+    conHist.forEach(function(p) {
+      p.distanciaKm = _distanciaKm(actual.lat, actual.lng, p.lat, p.lng);
+      actual = p;
+      delete p._pa;
+    });
+    return conHist;
+  } catch (err) {
+    return fallback(); // ante cualquier problema, nunca romper el despacho
+  }
+}
+
 // ============================================
 // LÓGICA INTERNA (no expuesta a google.script.run)
 //
@@ -669,7 +769,9 @@ const _Datos = {
       return { fila: c.factura.fila, cliente: c.factura.cliente, factura: c.factura.factura, valor: c.factura.valor, lat: mejor.lat, lng: mejor.lng };
     });
 
-    const ordenBase = _ordenarPorCercania(CONFIG.bodega, conUbicacion);
+    // Orden sugerido: aprende del historial real (color + día de semana);
+    // si no hay suficiente historia, cae al orden por cercanía.
+    const ordenBase = _ordenAprendido(color, conUbicacion);
 
     // Las paradas reagendadas o con una incidencia registrada hoy (local
     // cerrado, cambio de número) se mandan al final de la ruta en vez de
