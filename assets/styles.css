@@ -194,6 +194,157 @@ section{padding:88px 0;}
 .problem-card h3{font-size:17px;margin-bottom:8px;}
 .problem-card p{font-size:14px;color:rgba(255,255,255,.6);}
 
+/* ---------- Live demo: phone approaching a receipt ---------- */
+.demo{background:var(--ink);color:#fff;overflow:hidden;position:relative;}
+.demo::after{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(50% 50% at 50% 0%, rgba(108,58,237,.25), transparent 65%);
+  pointer-events:none;
+}
+.demo .kicker{color:var(--yellow);}
+.demo .section-head p{color:rgba(255,255,255,.62);}
+.demo-stage{
+  position:relative;
+  width:min(400px, 90vw);
+  height:clamp(420px, 60vw, 500px);
+  margin:0 auto;
+}
+
+/* the bank receipt card being "held up" */
+.demo-receipt{
+  position:absolute;inset:0;
+  background:#fff;color:var(--ink);
+  border-radius:20px;
+  padding:22px 20px;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.5);
+  border:1px solid rgba(10,22,61,.06);
+}
+.demo-receipt-brand{
+  display:flex;align-items:center;gap:8px;
+  padding-bottom:14px;margin-bottom:14px;
+  border-bottom:1px solid rgba(10,22,61,.08);
+}
+.demo-receipt-brand .sq{width:16px;height:16px;border-radius:4px;background:var(--yellow);flex-shrink:0;}
+.demo-receipt-brand span{font-family:var(--font-head);font-weight:700;font-size:12px;letter-spacing:.03em;color:var(--ink);}
+.demo-receipt-check{
+  width:46px;height:46px;border-radius:50%;margin:0 auto 12px;
+  background:var(--green-lo);color:var(--green);
+  display:flex;align-items:center;justify-content:center;
+}
+.demo-receipt-check svg{width:22px;height:22px;}
+.demo-receipt-title{text-align:center;font-size:13.5px;color:var(--azul-70);margin-bottom:6px;}
+.demo-receipt-amount{text-align:center;font-family:var(--font-head);font-weight:800;font-size:34px;margin-bottom:6px;}
+.demo-receipt-to{text-align:center;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px;}
+.demo-receipt-meta{text-align:center;font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:14px;}
+.demo-receipt-rows{border-top:1px dashed rgba(10,22,61,.12);padding-top:12px;display:flex;flex-direction:column;gap:8px;}
+.demo-receipt-rows div{display:flex;justify-content:space-between;font-size:11.5px;}
+.demo-receipt-rows span:first-child{color:var(--muted);}
+.demo-receipt-rows span:last-child{color:var(--ink);font-weight:600;}
+.demo-receipt-qr{
+  margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.demo-receipt-qr p{font-size:11px;color:var(--violeta);font-weight:600;}
+.demo-qr{width:64px;height:64px;border-radius:8px;background:
+  repeating-conic-gradient(var(--ink) 0% 25%, #fff 0% 50%) 0 0/16px 16px;
+  position:relative;border:3px solid var(--ink);
+}
+
+/* the phone approaching the receipt */
+.demo-phone{
+  position:absolute;right:-6px;bottom:-24px;
+  width:180px;height:368px;
+  border-radius:32px;
+  background:linear-gradient(160deg,#16224e,#050a1e);
+  border:6px solid #0c1533;
+  box-shadow:0 30px 50px -18px rgba(0,0,0,.55);
+  padding:10px;
+  transform-origin:bottom right;
+  animation:demoPhoneApproach 6s ease-in-out infinite;
+}
+.demo-phone-notch{width:44px;height:5px;background:rgba(255,255,255,.25);border-radius:3px;margin:0 auto 8px;}
+.demo-screen{
+  position:relative;width:100%;height:calc(100% - 21px);
+  border-radius:20px;overflow:hidden;background:var(--ink);
+}
+.demo-screen-state{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:16px;text-align:center;
+}
+.demo-state-idle{animation:demoIdleFade 6s ease-in-out infinite;}
+.demo-viewfinder{
+  width:96px;height:96px;position:relative;
+}
+.demo-viewfinder i{
+  position:absolute;width:20px;height:20px;
+  border:2.5px solid var(--yellow);
+}
+.demo-viewfinder i:nth-child(1){top:0;left:0;border-right:none;border-bottom:none;border-radius:6px 0 0 0;}
+.demo-viewfinder i:nth-child(2){top:0;right:0;border-left:none;border-bottom:none;border-radius:0 6px 0 0;}
+.demo-viewfinder i:nth-child(3){bottom:0;left:0;border-right:none;border-top:none;border-radius:0 0 0 6px;}
+.demo-viewfinder i:nth-child(4){bottom:0;right:0;border-left:none;border-top:none;border-radius:0 0 6px 0;}
+.demo-scanline{
+  position:absolute;left:6px;right:6px;height:2px;
+  background:var(--yellow);box-shadow:0 0 10px 1px rgba(255,199,0,.7);
+  animation:demoScanline 1.6s ease-in-out infinite;
+}
+.demo-state-idle p{font-size:12px;color:rgba(255,255,255,.55);}
+.demo-state-result{opacity:0;animation:demoResultFade 6s ease-in-out infinite;}
+.demo-result-check{
+  width:52px;height:52px;border-radius:50%;
+  background:var(--green-lo);color:var(--green-hi);
+  display:flex;align-items:center;justify-content:center;
+}
+.demo-result-check svg{width:26px;height:26px;}
+.demo-state-result h4{color:#fff;font-family:var(--font-head);font-size:15px;font-weight:600;}
+.demo-state-result .amount{color:var(--yellow);font-family:var(--font-head);font-weight:800;font-size:22px;}
+.demo-state-result p{font-size:11.5px;color:rgba(255,255,255,.55);}
+.demo-glow{
+  position:absolute;right:64px;bottom:150px;
+  width:70px;height:70px;border-radius:50%;
+  background:radial-gradient(circle, rgba(92,240,166,.55), transparent 70%);
+  opacity:0;animation:demoGlow 6s ease-in-out infinite;
+  pointer-events:none;
+}
+
+@keyframes demoPhoneApproach{
+  0%, 14%   { transform:translate(22px,30px) scale(.7) rotate(-9deg); }
+  38%, 68%  { transform:translate(0,0) scale(1) rotate(-3deg); }
+  90%, 100% { transform:translate(22px,30px) scale(.7) rotate(-9deg); }
+}
+@keyframes demoIdleFade{
+  0%, 28%   { opacity:1; }
+  38%, 76%  { opacity:0; }
+  88%, 100% { opacity:1; }
+}
+@keyframes demoResultFade{
+  0%, 28%   { opacity:0; }
+  38%, 76%  { opacity:1; }
+  88%, 100% { opacity:0; }
+}
+@keyframes demoGlow{
+  0%, 32%   { opacity:0; transform:scale(.6); }
+  40%       { opacity:.9; transform:scale(1.15); }
+  52%, 100% { opacity:0; transform:scale(1.4); }
+}
+@keyframes demoScanline{
+  0%   { top:8px; }
+  50%  { top:88px; }
+  100% { top:8px; }
+}
+
+@media (max-width:560px){
+  .demo-phone{width:150px;height:308px;right:-4px;bottom:-18px;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .demo-phone{animation:none;transform:translate(0,0) scale(1) rotate(-3deg);}
+  .demo-state-idle{animation:none;opacity:0;}
+  .demo-state-result{animation:none;opacity:1;}
+  .demo-glow{animation:none;opacity:0;}
+  .demo-scanline{animation:none;display:none;}
+}
+
 /* ---------- Explore (Home -> other pages) ---------- */
 .explore{background:#fff;}
 .explore-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
