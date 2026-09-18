@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es-EC">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regístrate — Nuvo</title>
+<meta name="description" content="Sé de los primeros negocios en probar Nuvo. Deja tus datos y te contactamos por WhatsApp para activar tu cuenta.">
+<link rel="icon" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<div class="reg-bar">
+  <div class="wrap">
+    <a class="brand" href="index.html" style="color:#fff">
+      <img src="assets/logo.png" alt="Nuvo">
+      Nuvo
+    </a>
+    <a class="reg-back" href="index.html">← Volver al sitio</a>
+  </div>
+</div>
+
+<section class="reg-hero">
+  <div class="wrap reg-grid">
+    <div class="reg-pitch">
+      <span class="pill eyebrow">Cupos abiertos · Grupo de primeros negocios</span>
+      <h1>Deja de perder dinero por comprobantes falsos. Empieza con Nuvo hoy.</h1>
+      <p class="lead">Regístrate en 30 segundos. Te escribimos por WhatsApp para activar tu cuenta y mostrarte cómo funciona en tu propio mostrador, sin compromiso.</p>
+
+      <div class="reg-perks">
+        <div class="reg-perk">
+          <div class="reg-perk-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <h3>Activación rápida</h3>
+            <p>En cuanto confirmamos tus datos, tu cuenta queda lista para escanear el mismo día.</p>
+          </div>
+        </div>
+        <div class="reg-perk">
+          <div class="reg-perk-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l7 3v6c0 5-3.4 8.6-7 11-3.6-2.4-7-6-7-11V5l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12.2l2 2 4-4.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <h3>Sin compromiso</h3>
+            <p>Conversamos por WhatsApp, resolvemos tus dudas y decides tú si sigues adelante.</p>
+          </div>
+        </div>
+        <div class="reg-perk">
+          <div class="reg-perk-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 21c0-4 4-6 9-6s9 2 9 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/></svg>
+          </div>
+          <div>
+            <h3>Soporte real, hecho en Ecuador</h3>
+            <p>Hablas directo con nosotros, no con un bot ni un ticket perdido.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reg-example">
+        <div class="status-dot status-ok">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div class="reg-example-title">Transferencia real</div>
+          <div class="reg-example-sub">Comercial Ríos · validado en segundos con Nuvo</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reg-card">
+      <div class="reg-card-head">
+        <h2>Regístrate en 30 segundos</h2>
+        <p>Elige el plan que más se ajusta a tu negocio.</p>
+      </div>
+
+      <form id="reg-form">
+        <div class="reg-field">
+          <label for="nombre">Nombre y apellido</label>
+          <input type="text" id="nombre" name="nombre" placeholder="Ej. María Torres" required autocomplete="name">
+        </div>
+
+        <div class="reg-plan-group" role="radiogroup" aria-label="Plan de interés">
+          <div class="reg-plan-option">
+            <input type="radio" id="plan-individual" name="plan" value="individual" data-label="Individual — $15/mes" required>
+            <label for="plan-individual">
+              <span class="reg-plan-name">Individual</span>
+              <span class="reg-plan-price">$15<span style="font-size:11px;font-weight:600;color:var(--azul-70)">/mes</span></span>
+            </label>
+          </div>
+          <div class="reg-plan-option">
+            <input type="radio" id="plan-negocio" name="plan" value="negocio" data-label="Negocio — $25/mes" checked>
+            <label for="plan-negocio">
+              <span class="reg-plan-name">Negocio <span class="reg-plan-tag">Más elegido</span></span>
+              <span class="reg-plan-price">$25<span style="font-size:11px;font-weight:600;color:var(--azul-70)">/mes</span></span>
+            </label>
+          </div>
+          <div class="reg-plan-option">
+            <input type="radio" id="plan-equipo" name="plan" value="equipo" data-label="Equipo — $49/mes">
+            <label for="plan-equipo">
+              <span class="reg-plan-name">Equipo</span>
+              <span class="reg-plan-price">$49<span style="font-size:11px;font-weight:600;color:var(--azul-70)">/mes</span></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="reg-field">
+          <label for="celular">Celular</label>
+          <input type="tel" id="celular" name="celular" placeholder="Ej. 099 123 4567" required autocomplete="tel" inputmode="tel">
+        </div>
+
+        <div class="reg-field">
+          <label for="correo">Correo</label>
+          <input type="email" id="correo" name="correo" placeholder="Ej. maria@negocio.com" required autocomplete="email">
+        </div>
+
+        <button type="submit" class="btn btn-primary reg-submit">Enviar y hablar por WhatsApp</button>
+
+        <div class="reg-trust">
+          <span><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Sin spam</span>
+          <span><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Respuesta el mismo día</span>
+          <span><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Tus datos solo van a Nuvo</span>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="reg-footer">
+  <div class="wrap">
+    <span>NUVO · Soluciones digitales · Ecuador · &copy; <span id="year"></span></span>
+  </div>
+</footer>
+
+<script src="assets/script.js"></script>
+
+</body>
+</html>
