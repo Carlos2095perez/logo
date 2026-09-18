@@ -65,7 +65,7 @@ header{
   border-bottom:1px solid rgba(255,255,255,.08);
 }
 .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;color:#fff;}
-.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:700;font-size:18px;}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:.02em;}
 .brand img{width:32px;height:32px;border-radius:9px;}
 .nav-links{display:flex;align-items:center;gap:28px;font-size:14px;font-weight:500;color:rgba(255,255,255,.82);}
 .nav-links a:hover{color:#fff;}
@@ -541,7 +541,7 @@ section{padding:88px 0;}
 /* ---------- Footer ---------- */
 footer{background:#060c24;color:rgba(255,255,255,.55);padding:44px 0 28px;}
 .foot-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:18px;margin-bottom:28px;}
-.foot-brand{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-head);font-weight:700;font-size:16px;}
+.foot-brand{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-head);font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.02em;}
 .foot-brand img{width:28px;height:28px;border-radius:8px;}
 footer .foot-links{display:flex;gap:22px;font-size:13.5px;}
 footer .foot-links a:hover{color:#fff;}
