@@ -73,9 +73,46 @@ header{
 .nav-links a.active::after{
   content:"";position:absolute;left:0;right:0;bottom:-16px;height:2px;background:var(--yellow);
 }
-.nav-cta{display:flex;}
+.nav-cta{display:flex;align-items:center;gap:10px;}
+
+/* Mobile menu — plain <details>/<summary>, works with zero JS */
+.mobile-menu{position:relative;display:none;}
+.menu-toggle{
+  display:flex;align-items:center;justify-content:center;
+  width:42px;height:42px;border-radius:10px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+  cursor:pointer;list-style:none;
+}
+.menu-toggle::-webkit-details-marker{display:none;}
+.menu-toggle svg{width:20px;height:20px;color:#fff;}
+.menu-toggle .icon-close{display:none;}
+.mobile-menu[open] .menu-toggle .icon-menu{display:none;}
+.mobile-menu[open] .menu-toggle .icon-close{display:block;}
+.mobile-menu-panel{
+  position:absolute;top:calc(100% + 12px);right:0;
+  background:#0d1638;border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;padding:10px;
+  display:flex;flex-direction:column;gap:2px;
+  min-width:220px;
+  box-shadow:0 24px 48px -14px rgba(0,0,0,.55);
+}
+.mobile-menu-panel a{
+  padding:13px 14px;border-radius:10px;
+  font-size:15px;font-weight:500;color:rgba(255,255,255,.85);
+}
+.mobile-menu-panel a:hover{background:rgba(255,255,255,.08);color:#fff;}
+.mobile-menu-panel a.active{background:rgba(255,199,0,.12);color:var(--yellow);font-weight:600;}
+.mobile-menu-panel a.mobile-menu-cta{
+  margin-top:6px;background:var(--yellow);color:var(--ink);
+  text-align:center;font-weight:600;
+}
+.mobile-menu-panel a.mobile-menu-cta:hover{background:var(--yellow);color:var(--ink);}
+
 @media (max-width:760px){
   .nav-links{display:none;}
+  .mobile-menu{display:block;}
+  /* the floating WhatsApp button already covers this on small screens */
+  .nav-cta .btn-primary{display:none;}
 }
 
 /* ---------- Hero ---------- */
