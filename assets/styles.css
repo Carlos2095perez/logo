@@ -78,7 +78,7 @@ header{
 }
 .nav-cta{display:flex;align-items:center;gap:10px;}
 
-/* Mobile menu — plain <details>/<summary>, works with zero JS */
+/* Mobile menu: plain <details>/<summary>, works with zero JS */
 .mobile-menu{position:relative;display:none;}
 .menu-toggle{
   display:flex;align-items:center;justify-content:center;
@@ -571,6 +571,7 @@ section{padding:88px 0;}
 .compare-table td.highlight, .compare-table th.highlight{background:rgba(108,58,237,.14);}
 .compare-check{width:18px;height:18px;color:var(--green-hi);vertical-align:-4px;}
 .compare-dash{color:rgba(255,255,255,.25);}
+.compare-dash svg{width:16px;height:16px;vertical-align:-3px;}
 
 /* ---------- Registration landing page ---------- */
 .reg-bar{padding:18px 0;background:var(--ink);}
