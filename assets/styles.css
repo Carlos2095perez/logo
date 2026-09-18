@@ -527,6 +527,13 @@ section{padding:88px 0;}
 .plan-features{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:28px;flex:1;}
 .plan-features li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:rgba(255,255,255,.82);}
 .plan-features svg{width:17px;height:17px;flex-shrink:0;margin-top:2px;color:var(--green-hi);}
+.plan-features .soon{
+  display:inline-block;margin-left:2px;
+  font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+  color:var(--yellow);background:rgba(255,199,0,.14);
+  padding:2px 6px;border-radius:6px;white-space:nowrap;
+}
+.plan-includes{font-size:13px;color:rgba(255,255,255,.5);font-style:italic;margin-bottom:14px;}
 
 /* ---------- CTA banner ---------- */
 .cta-banner{
