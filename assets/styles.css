@@ -86,7 +86,7 @@ header{
   position:relative;
   overflow:hidden;
 }
-.hero::after{
+.hero::before{
   content:"";position:absolute;inset:0;
   background:radial-gradient(60% 60% at 85% 20%, rgba(108,58,237,.35), transparent 60%);
   pointer-events:none;
@@ -146,7 +146,7 @@ header{
   position:relative;
   overflow:hidden;
 }
-.page-banner::after{
+.page-banner::before{
   content:"";position:absolute;inset:0;
   background:radial-gradient(60% 60% at 85% 20%, rgba(108,58,237,.35), transparent 60%);
   pointer-events:none;
@@ -196,7 +196,7 @@ section{padding:88px 0;}
 
 /* ---------- Live demo: phone approaching a receipt ---------- */
 .demo{background:var(--ink);color:#fff;overflow:hidden;position:relative;}
-.demo::after{
+.demo::before{
   content:"";position:absolute;inset:0;
   background:radial-gradient(50% 50% at 50% 0%, rgba(108,58,237,.25), transparent 65%);
   pointer-events:none;
