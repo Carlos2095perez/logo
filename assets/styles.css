@@ -535,6 +535,36 @@ section{padding:88px 0;}
 }
 .plan-includes{font-size:13px;color:rgba(255,255,255,.5);font-style:italic;margin-bottom:14px;}
 
+/* ---------- Plan comparison table ---------- */
+.compare-head{margin:64px 0 24px;text-align:center;}
+.compare-head h3{font-size:22px;margin-bottom:8px;}
+.compare-head p{font-size:14px;color:rgba(255,255,255,.55);}
+.compare-wrap{
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  border-radius:var(--radius-sheet);
+  border:1px solid rgba(255,255,255,.12);
+}
+.compare-table{width:100%;min-width:660px;border-collapse:collapse;font-size:14px;}
+.compare-table th, .compare-table td{
+  padding:16px 18px;text-align:center;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  white-space:nowrap;
+}
+.compare-table tbody tr:last-child td{border-bottom:none;}
+.compare-table thead th{
+  font-family:var(--font-head);font-weight:700;font-size:15px;color:#fff;
+  background:rgba(255,255,255,.04);padding-top:20px;
+}
+.compare-price{display:block;font-family:var(--font-head);font-weight:800;font-size:17px;color:var(--yellow);margin-top:4px;}
+.compare-table td.compare-feature, .compare-table th.compare-feature{
+  text-align:left;font-weight:500;color:rgba(255,255,255,.8);
+  position:sticky;left:0;background:var(--ink);white-space:normal;
+}
+.compare-table thead th.compare-feature{background:rgba(10,22,61,1);}
+.compare-table td.highlight, .compare-table th.highlight{background:rgba(108,58,237,.14);}
+.compare-check{width:18px;height:18px;color:var(--green-hi);vertical-align:-4px;}
+.compare-dash{color:rgba(255,255,255,.25);}
+
 /* ---------- CTA banner ---------- */
 .cta-banner{
   background:linear-gradient(120deg, var(--violeta), #4c22b0);
