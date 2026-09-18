@@ -9,348 +9,21 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --ink:#0A163D;
-    --ink-soft:#101c47;
-    --azul-70:#3A4468;
-    --violeta:#6C3AED;
-    --violeta-soft:#8a63f2;
-    --yellow:#FFC700;
-    --green:#00D26A;
-    --green-lo:#05231A;
-    --green-hi:#5CF0A6;
-    --red:#FF4152;
-    --red-lo:#2A0E12;
-    --muted:#9AA1AA;
-    --paper:#F6F5FB;
-    --font-head:'Poppins',sans-serif;
-    --font-body:'Inter',sans-serif;
-    --radius-card:18px;
-    --radius-sheet:24px;
-    --radius-pill:999px;
-    --ease-tap:cubic-bezier(.2,.8,.2,1);
-    --dur:280ms;
-    --maxw:1160px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  html{scroll-behavior:smooth;}
-  body{
-    font-family:var(--font-body);
-    background:var(--paper);
-    color:var(--ink);
-    line-height:1.5;
-    -webkit-font-smoothing:antialiased;
-  }
-  img{max-width:100%;display:block;}
-  a{color:inherit;text-decoration:none;}
-  h1,h2,h3,h4{font-family:var(--font-head);line-height:1.15;letter-spacing:-0.01em;}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
-  .pill{
-    display:inline-flex;align-items:center;gap:8px;
-    padding:6px 14px;border-radius:var(--radius-pill);
-    font-size:13px;font-weight:600;letter-spacing:.02em;
-  }
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    padding:14px 26px;border-radius:var(--radius-pill);
-    font-family:var(--font-head);font-weight:600;font-size:15px;
-    border:none;cursor:pointer;transition:transform var(--dur) var(--ease-tap), box-shadow var(--dur) var(--ease-tap), background var(--dur) var(--ease-tap);
-    white-space:nowrap;
-  }
-  .btn:active{transform:scale(.97);}
-  .btn-primary{background:var(--yellow);color:var(--ink);box-shadow:0 8px 24px -8px rgba(255,199,0,.6);}
-  .btn-primary:hover{box-shadow:0 12px 28px -6px rgba(255,199,0,.75);}
-  .btn-ghost{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.22);}
-  .btn-ghost:hover{background:rgba(255,255,255,.16);}
-  .btn-dark{background:var(--ink);color:#fff;}
-  .btn-dark:hover{background:var(--ink-soft);}
-  .btn-outline{background:transparent;color:var(--ink);border:1.5px solid var(--ink);}
-  .btn-outline:hover{background:var(--ink);color:#fff;}
-  .btn-block{width:100%;}
-
-  /* ---------- Header ---------- */
-  header{
-    position:sticky;top:0;z-index:50;
-    background:rgba(10,22,61,.85);
-    backdrop-filter:blur(10px);
-    border-bottom:1px solid rgba(255,255,255,.08);
-  }
-  .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;color:#fff;}
-  .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:700;font-size:18px;}
-  .brand img{width:32px;height:32px;border-radius:9px;}
-  .nav-links{display:flex;align-items:center;gap:28px;font-size:14px;font-weight:500;color:rgba(255,255,255,.82);}
-  .nav-links a:hover{color:#fff;}
-  .nav-cta{display:flex;}
-  @media (max-width:760px){
-    .nav-links{display:none;}
-  }
-
-  /* ---------- Hero ---------- */
-  .hero{
-    background:radial-gradient(120% 140% at 10% -10%, #14245e 0%, var(--ink) 55%, #060c24 100%);
-    color:#fff;
-    padding:88px 0 96px;
-    position:relative;
-    overflow:hidden;
-  }
-  .hero::after{
-    content:"";position:absolute;inset:0;
-    background:radial-gradient(60% 60% at 85% 20%, rgba(108,58,237,.35), transparent 60%);
-    pointer-events:none;
-  }
-  .hero-grid{
-    display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:center;
-    position:relative;
-  }
-  @media (max-width:900px){ .hero-grid{grid-template-columns:1fr;} }
-  .eyebrow{
-    background:rgba(108,58,237,.22);color:var(--violeta-soft);
-    border:1px solid rgba(140,99,242,.4);
-  }
-  .hero h1{
-    font-size:clamp(32px,4.4vw,50px);
-    margin:20px 0 18px;
-    font-weight:800;
-  }
-  .hero p.lead{
-    font-size:18px;color:rgba(255,255,255,.72);max-width:46ch;margin-bottom:32px;
-  }
-  .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;}
-  .hero-trust{margin-top:36px;display:flex;gap:22px;flex-wrap:wrap;font-size:13px;color:rgba(255,255,255,.55);}
-  .hero-trust span{display:flex;align-items:center;gap:8px;}
-  .dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;}
-
-  /* Hero visual: three receipt states */
-  .hero-visual{position:relative;}
-  .stack{display:flex;flex-direction:column;gap:14px;}
-  .receipt-card{
-    background:rgba(255,255,255,.06);
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:var(--radius-sheet);
-    padding:18px 20px;
-    display:flex;align-items:center;gap:14px;
-    backdrop-filter:blur(6px);
-    transform:translateX(0);
-    transition:transform var(--dur) var(--ease-tap);
-  }
-  .receipt-card:hover{transform:translateX(6px);}
-  .status-dot{
-    width:40px;height:40px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  }
-  .status-dot svg{width:20px;height:20px;}
-  .status-ok{background:var(--green-lo);color:var(--green-hi);}
-  .status-warn{background:#2a2205;color:var(--yellow);}
-  .status-bad{background:var(--red-lo);color:#ff8b96;}
-  .receipt-title{font-family:var(--font-head);font-weight:600;font-size:15px;margin-bottom:2px;}
-  .receipt-sub{font-size:13px;color:rgba(255,255,255,.55);}
-
-  /* ---------- Sections generic ---------- */
-  section{padding:88px 0;}
-  .section-head{max-width:640px;margin:0 auto 48px;text-align:center;}
-  .section-head.left{margin:0 0 48px;text-align:left;}
-  .kicker{
-    display:inline-block;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
-    color:var(--violeta);margin-bottom:12px;
-  }
-  .section-head h2{font-size:clamp(26px,3.4vw,38px);margin-bottom:14px;}
-  .section-head p{color:var(--azul-70);font-size:16px;}
-
-  /* ---------- Problem section ---------- */
-  .problem{background:var(--ink);color:#fff;}
-  .problem .kicker{color:var(--yellow);}
-  .problem .section-head p{color:rgba(255,255,255,.62);}
-  .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
-  @media (max-width:860px){.cards3{grid-template-columns:1fr;}}
-  .problem-card{
-    background:rgba(255,255,255,.05);
-    border:1px solid rgba(255,255,255,.1);
-    border-radius:var(--radius-card);
-    padding:28px 24px;
-    transition:transform var(--dur) var(--ease-tap), background var(--dur) var(--ease-tap);
-  }
-  .problem-card:hover{transform:translateY(-4px);background:rgba(255,255,255,.08);}
-  .problem-num{
-    font-family:var(--font-head);font-weight:800;font-size:13px;color:var(--yellow);
-    display:inline-flex;align-items:center;justify-content:center;
-    width:30px;height:30px;border-radius:8px;background:rgba(255,199,0,.14);margin-bottom:16px;
-  }
-  .problem-card h3{font-size:17px;margin-bottom:8px;}
-  .problem-card p{font-size:14px;color:rgba(255,255,255,.6);}
-
-  /* ---------- How it works ---------- */
-  .how{background:#fff;}
-  .how-flow{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:0;
-    position:relative;margin-bottom:56px;
-  }
-  @media (max-width:860px){.how-flow{grid-template-columns:1fr;gap:28px;}}
-  .how-step{position:relative;padding:0 20px;}
-  .how-step:not(:last-child)::after{
-    content:"";position:absolute;top:34px;right:-10%;width:20%;height:2px;
-    background:repeating-linear-gradient(90deg, var(--violeta) 0 6px, transparent 6px 12px);
-  }
-  @media (max-width:860px){ .how-step:not(:last-child)::after{display:none;} }
-  .how-step-num{
-    width:68px;height:68px;border-radius:50%;
-    background:linear-gradient(145deg, var(--violeta), #5227c2);
-    color:#fff;font-family:var(--font-head);font-weight:800;font-size:24px;
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 12px 24px -8px rgba(108,58,237,.5);
-    margin-bottom:20px;
-  }
-  .how-step h3{font-size:18px;margin-bottom:10px;}
-  .how-step p{font-size:14.5px;color:var(--azul-70);max-width:32ch;}
-
-  .outcomes{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
-  }
-  @media (max-width:860px){.outcomes{grid-template-columns:1fr;}}
-  .outcome{
-    border-radius:var(--radius-card);
-    padding:22px 22px;
-    display:flex;align-items:flex-start;gap:14px;
-    border:1px solid rgba(0,0,0,.06);
-  }
-  .outcome-ok{background:var(--green-lo);color:var(--green-hi);}
-  .outcome-warn{background:#2a2205;color:var(--yellow);}
-  .outcome-bad{background:var(--red-lo);color:#ff9aa4;}
-  .outcome-icon{
-    width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.1);
-    display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  }
-  .outcome-icon svg{width:18px;height:18px;}
-  .outcome h4{font-family:var(--font-head);font-size:15px;font-weight:600;margin-bottom:4px;color:inherit;}
-  .outcome p{font-size:13px;opacity:.85;}
-
-  /* ---------- Values ---------- */
-  .values{background:var(--paper);}
-  .cards4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
-  @media (max-width:960px){.cards4{grid-template-columns:1fr 1fr;}}
-  @media (max-width:560px){.cards4{grid-template-columns:1fr;}}
-  .value-card{
-    background:#fff;border-radius:var(--radius-card);padding:26px 22px;
-    border:1px solid rgba(10,22,61,.06);
-    box-shadow:0 1px 3px rgba(10,22,61,.04);
-    transition:transform var(--dur) var(--ease-tap), box-shadow var(--dur) var(--ease-tap);
-  }
-  .value-card:hover{transform:translateY(-4px);box-shadow:0 16px 32px -16px rgba(10,22,61,.25);}
-  .value-icon{
-    width:44px;height:44px;border-radius:12px;
-    background:rgba(108,58,237,.1);color:var(--violeta);
-    display:flex;align-items:center;justify-content:center;margin-bottom:16px;
-  }
-  .value-icon svg{width:22px;height:22px;}
-  .value-card h3{font-size:16px;margin-bottom:8px;}
-  .value-card p{font-size:14px;color:var(--azul-70);}
-
-  /* ---------- Audience ---------- */
-  .audience{background:#fff;}
-  .aud-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
-  @media (max-width:760px){.aud-grid{grid-template-columns:1fr;}}
-  .aud-card{
-    border-radius:var(--radius-sheet);
-    padding:32px;
-    background:linear-gradient(160deg, var(--ink), #142455);
-    color:#fff;
-  }
-  .aud-card.alt{background:linear-gradient(160deg, #6C3AED, #4c22b0);}
-  .aud-tag{
-    display:inline-flex;padding:5px 12px;border-radius:var(--radius-pill);
-    background:rgba(255,255,255,.12);font-size:12px;font-weight:600;margin-bottom:16px;
-  }
-  .aud-card h3{font-size:20px;margin-bottom:10px;}
-  .aud-card p{font-size:14.5px;color:rgba(255,255,255,.75);}
-
-  /* ---------- Plans ---------- */
-  .plans{background:var(--ink);color:#fff;}
-  .plans .kicker{color:var(--yellow);}
-  .plans .section-head p{color:rgba(255,255,255,.62);}
-  .plans-note{
-    text-align:center;font-size:13px;color:rgba(255,255,255,.45);
-    margin-top:36px;
-  }
-  .plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch;}
-  @media (max-width:960px){.plan-grid{grid-template-columns:1fr;max-width:420px;margin:0 auto;}}
-  .plan-card{
-    background:rgba(255,255,255,.05);
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:var(--radius-sheet);
-    padding:32px 26px;
-    display:flex;flex-direction:column;
-    position:relative;
-    transition:transform var(--dur) var(--ease-tap), border-color var(--dur) var(--ease-tap);
-  }
-  .plan-card:hover{transform:translateY(-6px);}
-  .plan-card.featured{
-    background:linear-gradient(165deg, rgba(108,58,237,.28), rgba(108,58,237,.08));
-    border-color:var(--violeta-soft);
-  }
-  .plan-badge{
-    position:absolute;top:-13px;left:26px;
-    background:var(--yellow);color:var(--ink);
-    font-family:var(--font-head);font-weight:700;font-size:12px;
-    padding:5px 14px;border-radius:var(--radius-pill);
-  }
-  .plan-name{font-family:var(--font-head);font-weight:600;font-size:17px;margin-bottom:6px;}
-  .plan-desc{font-size:13.5px;color:rgba(255,255,255,.55);margin-bottom:20px;}
-  .plan-price{display:flex;align-items:baseline;gap:6px;margin-bottom:24px;}
-  .plan-price .amount{font-family:var(--font-head);font-size:40px;font-weight:800;}
-  .plan-price .period{font-size:14px;color:rgba(255,255,255,.55);}
-  .plan-features{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:28px;flex:1;}
-  .plan-features li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:rgba(255,255,255,.82);}
-  .plan-features svg{width:17px;height:17px;flex-shrink:0;margin-top:2px;color:var(--green-hi);}
-
-  /* ---------- CTA banner ---------- */
-  .cta-banner{
-    background:linear-gradient(120deg, var(--violeta), #4c22b0);
-    color:#fff;text-align:center;
-    padding:72px 0;
-  }
-  .cta-banner .pill{background:rgba(255,255,255,.14);margin-bottom:22px;}
-  .cta-banner h2{font-size:clamp(24px,3.6vw,34px);margin-bottom:14px;}
-  .cta-banner p{color:rgba(255,255,255,.78);margin-bottom:30px;font-size:16px;}
-
-  /* ---------- Footer ---------- */
-  footer{background:#060c24;color:rgba(255,255,255,.55);padding:44px 0 28px;}
-  .foot-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:18px;margin-bottom:28px;}
-  .foot-brand{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-head);font-weight:700;font-size:16px;}
-  .foot-brand img{width:28px;height:28px;border-radius:8px;}
-  footer .foot-links{display:flex;gap:22px;font-size:13.5px;}
-  footer .foot-links a:hover{color:#fff;}
-  .foot-bottom{
-    border-top:1px solid rgba(255,255,255,.08);padding-top:22px;
-    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12.5px;
-  }
-
-
-  /* WhatsApp floating button */
-  .wa-float{
-    position:fixed;bottom:22px;right:22px;z-index:60;
-    width:58px;height:58px;border-radius:50%;
-    background:var(--green);color:#fff;
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 14px 28px -8px rgba(0,210,106,.6);
-    transition:transform var(--dur) var(--ease-tap);
-  }
-  .wa-float:hover{transform:scale(1.06);}
-  .wa-float svg{width:28px;height:28px;}
-</style>
+<link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
 
 <header>
   <div class="nav wrap">
-    <a class="brand" href="#top">
+    <a class="brand" href="index.html">
       <img src="assets/logo.png" alt="Nuvo">
       Nuvo
     </a>
     <nav class="nav-links">
       <a href="#problema">El problema</a>
-      <a href="#como-funciona">Cómo funciona</a>
-      <a href="#valores">Por qué Nuvo</a>
-      <a href="#planes">Planes</a>
+      <a href="como-funciona.html">Cómo funciona</a>
+      <a href="valores.html">Por qué Nuvo</a>
+      <a href="planes.html">Planes</a>
     </nav>
     <div class="nav-cta">
       <a class="btn btn-primary" href="https://wa.me/593996879595?text=Hola%2C%20quiero%20saber%20m%C3%A1s%20sobre%20Nuvo" target="_blank" rel="noopener">Hablar por WhatsApp</a>
@@ -366,7 +39,7 @@
       <p class="lead">El comprobante llega por WhatsApp y ahí empieza el problema: una captura se edita en segundos. Nuvo confirma en el momento si la transferencia es real, sin sacar al cliente del mostrador.</p>
       <div class="hero-ctas">
         <a class="btn btn-primary" href="https://wa.me/593996879595?text=Hola%2C%20quiero%20saber%20m%C3%A1s%20sobre%20Nuvo" target="_blank" rel="noopener">Hablar por WhatsApp</a>
-        <a class="btn btn-ghost" href="#como-funciona">Ver cómo funciona</a>
+        <a class="btn btn-ghost" href="como-funciona.html">Ver cómo funciona</a>
       </div>
       <div class="hero-trust">
         <span><span class="dot"></span> Validación en segundos</span>
@@ -435,86 +108,38 @@
   </div>
 </section>
 
-<section class="how" id="como-funciona">
+<section class="explore">
   <div class="wrap">
     <div class="section-head">
-      <span class="kicker">Cómo funciona</span>
-      <h2>Tres pasos, sin sacar al cliente del mostrador</h2>
-      <p>Todo pasa en el tiempo que toma decir "ya te confirmo".</p>
+      <span class="kicker">Descubre más</span>
+      <h2>Todo lo que necesitas saber sobre Nuvo</h2>
+      <p>Tres páginas cortas, directo al grano.</p>
     </div>
-
-    <div class="how-flow">
-      <div class="how-step">
-        <div class="how-step-num">1</div>
-        <h3>Apuntas al comprobante</h3>
-        <p>Abres Nuvo y apuntas a la pantalla del cliente. No necesitas que te lo envíe ni pedirle capturas.</p>
-      </div>
-      <div class="how-step">
-        <div class="how-step-num">2</div>
-        <h3>El sistema confirma</h3>
-        <p>Nuvo lee los datos del comprobante y verifica que correspondan a una transferencia real, en segundos.</p>
-      </div>
-      <div class="how-step">
-        <div class="how-step-num">3</div>
-        <h3>Entregas con seguridad</h3>
-        <p>Verde y entregas. Rojo y revisas. El cobro queda registrado sin que anotes nada a mano.</p>
-      </div>
-    </div>
-
-    <div class="outcomes">
-      <div class="outcome outcome-ok">
-        <div class="outcome-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div>
-          <h4>Verde: coincide</h4>
-          <p>El comprobante coincide con el banco. Entregas con tranquilidad.</p>
+    <div class="explore-grid">
+      <a class="explore-card" href="como-funciona.html">
+        <div class="explore-icon">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
         </div>
-      </div>
-      <div class="outcome outcome-warn">
-        <div class="outcome-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16.5h.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M10.3 3.9L2.6 18a1.7 1.7 0 001.5 2.5h16a1.7 1.7 0 001.5-2.5L13.7 3.9a1.7 1.7 0 00-3.4 0z" stroke="currentColor" stroke-width="1.8"/></svg></div>
-        <div>
-          <h4>Amarillo: revisa</h4>
-          <p>Algo no cuadra. Revisa antes de entregar el producto.</p>
+        <h3>Cómo funciona</h3>
+        <p>Tres pasos, sin sacar al cliente del mostrador: apuntas, el sistema confirma, entregas con seguridad.</p>
+        <span class="explore-link">Ver el proceso <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </a>
+      <a class="explore-card" href="valores.html">
+        <div class="explore-icon">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l7 3v6c0 5-3.4 8.6-7 11-3.6-2.4-7-6-7-11V5l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12.2l2 2 4-4.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-      </div>
-      <div class="outcome outcome-bad">
-        <div class="outcome-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></div>
-        <div>
-          <h4>Rojo: no entregues</h4>
-          <p>El pago no existe o fue alterado. Cada intento queda guardado igual.</p>
+        <h3>Por qué Nuvo</h3>
+        <p>Confianza, rapidez sin filas, registro automático de cada cobro y hecho a medida para Ecuador.</p>
+        <span class="explore-link">Ver los valores <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </a>
+      <a class="explore-card" href="planes.html">
+        <div class="explore-icon">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M3 9h18M8 2v4M16 2v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7.5 13.5h3M7.5 17h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="values" id="valores">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="kicker">Por qué Nuvo</span>
-      <h2>Pensado para el mostrador, no para un laboratorio</h2>
-      <p>Nada de fricción, nada de pasos de más. Lo que un negocio necesita de verdad.</p>
-    </div>
-    <div class="cards4">
-      <div class="value-card">
-        <div class="value-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l7 3v6c0 5-3.4 8.6-7 11-3.6-2.4-7-6-7-11V5l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12.2l2 2 4-4.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <h3>Confianza y seguridad</h3>
-        <p>Cada validación se compara contra el movimiento real del banco, no contra una imagen que cualquiera puede editar.</p>
-      </div>
-      <div class="value-card">
-        <div class="value-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
-        <h3>Rapidez sin filas</h3>
-        <p>Confirmas en segundos, con el cliente enfrente. Nadie se queda esperando mientras revisas el banco a mano.</p>
-      </div>
-      <div class="value-card">
-        <div class="value-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M3 9h18M8 2v4M16 2v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7.5 13.5h3M7.5 17h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-        <h3>Registro automático</h3>
-        <p>Cada cobro queda guardado: quién validó, cuándo y cuánto. El cierre de caja deja de ser un dolor de cabeza.</p>
-      </div>
-      <div class="value-card">
-        <div class="value-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 21c0-4 4-6 9-6s9 2 9 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/></svg></div>
-        <h3>Hecho para Ecuador</h3>
-        <p>Pensado y construido para cómo se cobra realmente en negocios locales: por WhatsApp, en mostrador y contra reloj.</p>
-      </div>
+        <h3>Planes</h3>
+        <p>Un plan para cada tamaño de negocio, desde un solo punto de cobro hasta equipos completos.</p>
+        <span class="explore-link">Ver planes y precios <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </a>
     </div>
   </div>
 </section>
@@ -540,54 +165,6 @@
   </div>
 </section>
 
-<section class="plans" id="planes">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="kicker">Planes</span>
-      <h2>Un plan para cada tamaño de negocio</h2>
-      <p>Tu equipo cobra por ti. Cada validación queda registrada y ves el movimiento del día en un solo lugar.</p>
-    </div>
-    <div class="plan-grid">
-      <div class="plan-card">
-        <div class="plan-name">Básico</div>
-        <div class="plan-desc">Para un solo punto de cobro.</div>
-        <div class="plan-price"><span class="amount">$15</span><span class="period">/ mes</span></div>
-        <ul class="plan-features">
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> 1 dispositivo vinculado</li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Validaciones ilimitadas</li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Cierre de caja diario</li>
-        </ul>
-        <a class="btn btn-outline btn-block" style="color:#fff;border-color:rgba(255,255,255,.35)" href="https://wa.me/593996879595?text=Hola%2C%20me%20interesa%20el%20plan%20B%C3%A1sico%20de%20Nuvo" target="_blank" rel="noopener">Elegir Básico</a>
-      </div>
-      <div class="plan-card featured">
-        <span class="plan-badge">Más elegido</span>
-        <div class="plan-name">Negocio</div>
-        <div class="plan-desc">Para locales con más de un punto de cobro.</div>
-        <div class="plan-price"><span class="amount">$29</span><span class="period">/ mes</span></div>
-        <ul class="plan-features">
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Hasta 3 dispositivos</li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Exportar cierre a PDF y Excel</li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Resumen diario por correo</li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Soporte prioritario</li>
-        </ul>
-        <a class="btn btn-primary btn-block" href="https://wa.me/593996879595?text=Hola%2C%20me%20interesa%20el%20plan%20Negocio%20de%20Nuvo" target="_blank" rel="noopener">Elegir Negocio</a>
-      </div>
-      <div class="plan-card">
-        <div class="plan-name">Equipo</div>
-        <div class="plan-desc">Para cadenas o varios vendedores.</div>
-        <div class="plan-price"><span class="amount">$49</span><span class="period">/ mes</span></div>
-        <ul class="plan-features">
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Hasta 8 dispositivos</li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Usuarios con rol admin/vendedor</li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Reportes por vendedor</li>
-        </ul>
-        <a class="btn btn-outline btn-block" style="color:#fff;border-color:rgba(255,255,255,.35)" href="https://wa.me/593996879595?text=Hola%2C%20me%20interesa%20el%20plan%20Equipo%20de%20Nuvo" target="_blank" rel="noopener">Elegir Equipo</a>
-      </div>
-    </div>
-    <p class="plans-note">* Precios de referencia mientras cerramos el modelo final — pueden variar antes del lanzamiento.</p>
-  </div>
-</section>
-
 <section class="cta-banner">
   <div class="wrap">
     <span class="pill">Estamos armando el grupo de primeros negocios</span>
@@ -600,15 +177,15 @@
 <footer>
   <div class="wrap">
     <div class="foot-top">
-      <a class="foot-brand" href="#top">
+      <a class="foot-brand" href="index.html">
         <img src="assets/logo.png" alt="Nuvo">
         Nuvo
       </a>
       <div class="foot-links">
         <a href="#problema">El problema</a>
-        <a href="#como-funciona">Cómo funciona</a>
-        <a href="#valores">Por qué Nuvo</a>
-        <a href="#planes">Planes</a>
+        <a href="como-funciona.html">Cómo funciona</a>
+        <a href="valores.html">Por qué Nuvo</a>
+        <a href="planes.html">Planes</a>
       </div>
     </div>
     <div class="foot-bottom">
@@ -622,9 +199,7 @@
   <svg viewBox="0 0 32 32" fill="currentColor"><path d="M16.02 3C9.4 3 4 8.36 4 15c0 2.36.66 4.55 1.8 6.42L4 29l7.77-1.75A11.9 11.9 0 0016.02 27C22.65 27 28 21.64 28 15S22.65 3 16.02 3zm0 21.6a9.5 9.5 0 01-4.86-1.33l-.35-.21-4.6 1.04 1.02-4.5-.23-.37A9.55 9.55 0 016.4 15c0-5.32 4.32-9.6 9.62-9.6 5.3 0 9.6 4.28 9.6 9.6s-4.3 9.6-9.6 9.6zm5.27-7.19c-.29-.14-1.7-.84-1.96-.94-.26-.1-.46-.14-.65.14-.19.29-.75.94-.92 1.13-.17.19-.34.22-.63.07-.29-.14-1.22-.45-2.32-1.43-.86-.76-1.44-1.71-1.6-2-.17-.29-.02-.44.13-.58.13-.13.29-.34.43-.5.14-.17.19-.29.29-.48.1-.19.05-.36-.02-.5-.07-.14-.65-1.57-.9-2.15-.24-.57-.48-.5-.65-.5-.17-.01-.36-.01-.55-.01a1.07 1.07 0 00-.77.36c-.26.29-1 1-1 2.42 0 1.43 1.03 2.82 1.18 3.01.14.19 2.03 3.1 4.92 4.35.69.3 1.22.48 1.64.61.69.22 1.31.19 1.8.12.55-.08 1.7-.7 1.94-1.37.24-.67.24-1.25.17-1.37-.07-.12-.26-.19-.55-.33z"/></svg>
 </a>
 
-<script>
-  document.getElementById('year').textContent = new Date().getFullYear();
-</script>
+<script src="assets/script.js"></script>
 
 </body>
 </html>
