@@ -709,3 +709,123 @@ footer .foot-links a:hover{color:#fff;}
 }
 .wa-float:hover{transform:scale(1.06);}
 .wa-float svg{width:28px;height:28px;}
+
+/* ---------- Legal documents (política de privacidad, contrato) ---------- */
+.legal{background:#fff;}
+.legal-updated{
+  text-align:center;color:var(--muted);font-size:13.5px;margin-bottom:40px;
+}
+.legal-body{max-width:740px;margin:0 auto;}
+.legal-body h2{
+  font-size:19px;margin-top:40px;margin-bottom:14px;color:var(--ink);
+  padding-bottom:10px;border-bottom:1px solid rgba(10,22,61,.08);
+}
+.legal-body h2:first-child{margin-top:0;}
+.legal-body p{
+  font-size:15.5px;line-height:1.7;color:var(--azul-70);margin-bottom:14px;
+}
+.legal-jump{
+  max-width:740px;margin:0 auto 44px;
+  background:var(--paper);border-radius:var(--radius-card);
+  padding:18px 22px;font-size:13.5px;color:var(--azul-70);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.legal-jump a{color:var(--violeta);font-weight:600;}
+.legal-jump a:hover{text-decoration:underline;}
+
+/* ---------- Adhesion form ---------- */
+.adh{background:var(--paper);}
+.adh-form{max-width:720px;margin:0 auto;}
+.adh-section{
+  background:#fff;border-radius:var(--radius-sheet);
+  padding:30px 28px;margin-bottom:22px;
+  border:1px solid rgba(10,22,61,.06);
+  box-shadow:0 1px 3px rgba(10,22,61,.04);
+}
+.adh-section h2{font-size:18px;margin-bottom:4px;}
+.adh-section-sub{font-size:13.5px;color:var(--muted);margin-bottom:22px;}
+.adh-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media (max-width:600px){.adh-grid{grid-template-columns:1fr;}}
+.adh-field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.adh-field.full{grid-column:1 / -1;}
+.adh-field label{font-size:13px;font-weight:600;color:var(--azul-70);}
+.adh-field .hint{font-weight:400;color:var(--muted);font-size:12px;}
+.adh-field input,
+.adh-field select,
+.adh-field textarea{
+  padding:13px 15px;border-radius:12px;
+  border:1.5px solid rgba(10,22,61,.15);
+  font-family:var(--font-body);font-size:15px;color:var(--ink);
+  transition:border-color var(--dur) var(--ease-tap);
+  width:100%;background:#fff;
+}
+.adh-field input:focus,
+.adh-field select:focus,
+.adh-field textarea:focus{outline:none;border-color:var(--violeta);}
+.adh-field textarea{resize:vertical;min-height:80px;}
+
+.adh-toggle{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+.adh-toggle-option{position:relative;flex:1;min-width:160px;}
+.adh-toggle-option input{position:absolute;opacity:0;width:1px;height:1px;}
+.adh-toggle-option label{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 16px;border-radius:12px;text-align:center;
+  border:1.5px solid rgba(10,22,61,.15);cursor:pointer;font-weight:600;font-size:14.5px;
+  transition:border-color var(--dur) var(--ease-tap), background var(--dur) var(--ease-tap);
+}
+.adh-toggle-option input:checked + label{
+  border-color:var(--violeta);background:rgba(108,58,237,.06);color:var(--violeta);
+}
+.adh-toggle-option input:focus-visible + label{outline:2px solid var(--violeta);outline-offset:2px;}
+
+.adh-juridica{display:none;}
+.adh-juridica.show{display:block;}
+
+/* camera capture */
+.adh-capture{
+  border:1.5px dashed rgba(10,22,61,.2);border-radius:var(--radius-card);
+  padding:20px;text-align:center;background:var(--paper);
+}
+.adh-capture video, .adh-capture canvas, .adh-capture img.adh-preview{
+  width:100%;max-width:360px;border-radius:12px;background:#000;
+  display:block;margin:0 auto 16px;
+}
+.adh-capture-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.adh-capture-status{font-size:13px;color:var(--muted);margin-top:10px;}
+.adh-capture-status.ok{color:var(--green);font-weight:600;}
+.adh-file-fallback{margin-top:14px;font-size:13px;color:var(--azul-70);}
+.adh-file-fallback input{margin-top:8px;}
+
+/* signature pad */
+.adh-sigpad-wrap{
+  border:1.5px dashed rgba(10,22,61,.2);border-radius:var(--radius-card);
+  padding:16px;background:var(--paper);
+}
+.adh-sigpad{
+  width:100%;height:200px;border-radius:12px;background:#fff;
+  border:1px solid rgba(10,22,61,.12);touch-action:none;cursor:crosshair;
+  display:block;
+}
+.adh-sigpad-actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px;flex-wrap:wrap;}
+.adh-sigpad-hint{font-size:12.5px;color:var(--muted);}
+
+/* legal checkboxes */
+.adh-check{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:14px 4px;border-bottom:1px solid rgba(10,22,61,.06);
+}
+.adh-check:last-child{border-bottom:none;}
+.adh-check input{width:19px;height:19px;margin-top:2px;flex-shrink:0;accent-color:var(--violeta);}
+.adh-check label{font-size:14px;color:var(--azul-70);line-height:1.5;}
+.adh-check a{color:var(--violeta);font-weight:600;}
+.adh-check a:hover{text-decoration:underline;}
+
+.adh-submit-note{font-size:12.5px;color:var(--muted);text-align:center;margin-top:14px;}
+.adh-status{
+  text-align:center;padding:16px;border-radius:12px;margin-bottom:20px;font-size:14.5px;font-weight:600;
+  display:none;
+}
+.adh-status.show{display:block;}
+.adh-status.err{background:var(--red-lo);color:#ff9aa4;}
+.adh-status.ok{background:var(--green-lo);color:var(--green-hi);}
+.adh-status.loading{background:rgba(108,58,237,.1);color:var(--violeta);}
