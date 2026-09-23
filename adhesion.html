@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es-EC">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formulario de Adhesión · Nuvo</title>
+<meta name="description" content="Formulario de adhesión al servicio Nuvo: datos del cliente, cuenta bancaria, foto, firma digital y aceptación de términos.">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<header>
+  <div class="nav wrap">
+    <a class="brand" href="index.html">
+      <img src="assets/logo.png" alt="Nuvo">
+      Nuvo
+    </a>
+    <nav class="nav-links">
+      <a href="index.html#problema">El problema</a>
+      <a href="como-funciona.html">Cómo funciona</a>
+      <a href="valores.html">Por qué Nuvo</a>
+      <a href="planes.html">Planes</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-primary" href="https://wa.me/593996879595?text=Hola%2C%20quiero%20saber%20m%C3%A1s%20sobre%20Nuvo" target="_blank" rel="noopener">Hablar por WhatsApp</a>
+      <details class="mobile-menu">
+        <summary class="menu-toggle" aria-label="Abrir menú">
+          <svg class="icon-menu" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <svg class="icon-close" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </summary>
+        <nav class="mobile-menu-panel">
+          <a href="index.html#problema">El problema</a>
+          <a href="como-funciona.html">Cómo funciona</a>
+          <a href="valores.html">Por qué Nuvo</a>
+          <a href="planes.html">Planes</a>
+          <a class="mobile-menu-cta" href="https://wa.me/593996879595?text=Hola%2C%20quiero%20saber%20m%C3%A1s%20sobre%20Nuvo" target="_blank" rel="noopener">Hablar por WhatsApp</a>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>
+
+<section class="page-banner">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="index.html">Inicio</a> · <span>Formulario de adhesión</span></div>
+    <span class="kicker">Adhesión al servicio</span>
+    <h1>Formulario de adhesión</h1>
+    <p>Completa tus datos para activar tu cuenta Nuvo. Toma unos minutos.</p>
+  </div>
+</section>
+
+<section class="adh">
+  <div class="wrap">
+    <form id="adh-form" class="adh-form">
+
+      <div id="adh-status" class="adh-status"></div>
+
+      <div class="adh-section">
+        <h2>Datos personales</h2>
+        <p class="adh-section-sub">Como aparecen en tu cédula de identidad.</p>
+
+        <div class="adh-toggle" role="radiogroup" aria-label="Tipo de persona">
+          <div class="adh-toggle-option">
+            <input type="radio" id="adh-persona-natural" name="tipoPersona" value="natural" checked>
+            <label for="adh-persona-natural">Persona natural</label>
+          </div>
+          <div class="adh-toggle-option">
+            <input type="radio" id="adh-persona-juridica" name="tipoPersona" value="juridica">
+            <label for="adh-persona-juridica">Persona jurídica</label>
+          </div>
+        </div>
+
+        <div class="adh-grid">
+          <div class="adh-field">
+            <label for="adh-nombres">Nombres y apellidos</label>
+            <input type="text" id="adh-nombres" name="nombres" placeholder="Ej. María Torres Vega" required autocomplete="name">
+          </div>
+          <div class="adh-field">
+            <label for="adh-cedula">Número de cédula</label>
+            <input type="text" id="adh-cedula" name="cedula" placeholder="Ej. 1712345678" required inputmode="numeric" pattern="[0-9]{10}" maxlength="10" title="10 dígitos, sin guiones">
+          </div>
+        </div>
+
+        <div class="adh-juridica">
+          <div class="adh-grid">
+            <div class="adh-field">
+              <label for="adh-ruc">RUC de la empresa</label>
+              <input type="text" id="adh-ruc" name="ruc" placeholder="Ej. 1792345678001" inputmode="numeric" pattern="[0-9]{13}" maxlength="13" title="13 dígitos, sin guiones">
+            </div>
+            <div class="adh-field">
+              <label for="adh-representante">Representante legal</label>
+              <input type="text" id="adh-representante" name="representanteLegal" placeholder="Nombre completo del representante">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="adh-section">
+        <h2>Cuenta bancaria</h2>
+        <p class="adh-section-sub">A donde se depositan tus cobros validados.</p>
+
+        <div class="adh-toggle" role="radiogroup" aria-label="Tipo de cuenta">
+          <div class="adh-toggle-option">
+            <input type="radio" id="adh-cuenta-ahorros" name="tipoCuenta" value="ahorros" checked>
+            <label for="adh-cuenta-ahorros">Ahorros</label>
+          </div>
+          <div class="adh-toggle-option">
+            <input type="radio" id="adh-cuenta-corriente" name="tipoCuenta" value="corriente">
+            <label for="adh-cuenta-corriente">Corriente</label>
+          </div>
+        </div>
+
+        <div class="adh-field">
+          <label for="adh-numero-cuenta">Número de cuenta</label>
+          <input type="text" id="adh-numero-cuenta" name="numeroCuenta" placeholder="Ej. 2204183833" required inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="adh-section">
+        <h2>Contacto</h2>
+        <div class="adh-grid">
+          <div class="adh-field">
+            <label for="adh-correo">Correo</label>
+            <input type="email" id="adh-correo" name="correo" placeholder="Ej. maria@negocio.com" required autocomplete="email">
+          </div>
+          <div class="adh-field">
+            <label for="adh-telefono">Teléfono</label>
+            <input type="tel" id="adh-telefono" name="telefono" placeholder="Ej. 099 123 4567" required autocomplete="tel" inputmode="tel">
+          </div>
+        </div>
+        <div class="adh-field">
+          <label for="adh-direccion">Dirección de domicilio</label>
+          <textarea id="adh-direccion" name="direccion" placeholder="Calle, número, ciudad" required></textarea>
+        </div>
+      </div>
+
+      <div class="adh-section">
+        <h2>Foto de tu rostro</h2>
+        <p class="adh-section-sub">Para verificar tu identidad junto a tu firma.</p>
+
+        <div class="adh-capture" id="adh-capture">
+          <video id="adh-video" autoplay playsinline muted style="display:none"></video>
+          <canvas id="adh-photo-canvas" style="display:none"></canvas>
+          <img id="adh-photo-preview" class="adh-preview" style="display:none" alt="Foto capturada">
+
+          <div class="adh-capture-actions">
+            <button type="button" class="btn btn-outline" id="adh-btn-start-camera">Activar cámara</button>
+            <button type="button" class="btn btn-primary" id="adh-btn-take-photo" style="display:none">Capturar foto</button>
+            <button type="button" class="btn btn-outline" id="adh-btn-retake-photo" style="display:none">Repetir foto</button>
+          </div>
+          <p class="adh-capture-status" id="adh-photo-status">Aún no has tomado tu foto.</p>
+
+          <div class="adh-file-fallback" id="adh-photo-fallback" style="display:none">
+            <label for="adh-photo-file">¿No puedes usar la cámara? Sube una foto desde tu dispositivo:</label><br>
+            <input type="file" id="adh-photo-file" accept="image/*" capture="user">
+          </div>
+        </div>
+      </div>
+
+      <div class="adh-section">
+        <h2>Firma digital</h2>
+        <p class="adh-section-sub">Dibuja tu firma con el dedo o el mouse.</p>
+
+        <div class="adh-sigpad-wrap">
+          <canvas id="adh-sigpad" class="adh-sigpad"></canvas>
+          <div class="adh-sigpad-actions">
+            <span class="adh-sigpad-hint" id="adh-sig-status">Firma vacía</span>
+            <button type="button" class="btn btn-outline" id="adh-btn-clear-sig">Limpiar firma</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="adh-section">
+        <h2>Términos y condiciones</h2>
+
+        <div class="adh-check">
+          <input type="checkbox" id="adh-accept-terms" required>
+          <label for="adh-accept-terms">He leído y acepto los <a href="contrato-adhesion.html" target="_blank" rel="noopener">Términos y Condiciones</a> de uso del software Nuvo.</label>
+        </div>
+        <div class="adh-check">
+          <input type="checkbox" id="adh-accept-privacy" required>
+          <label for="adh-accept-privacy">He leído y acepto la <a href="politica-privacidad.html" target="_blank" rel="noopener">Política de Tratamiento de Datos Personales</a>.</label>
+        </div>
+        <div class="adh-check">
+          <input type="checkbox" id="adh-accept-contract" required>
+          <label for="adh-accept-contract">He leído y acepto el <a href="contrato-adhesion.html" target="_blank" rel="noopener">Contrato de Adhesión de Licencia de Software</a>.</label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary reg-submit" id="adh-submit-btn">Finalizar adhesión</button>
+      <p class="adh-submit-note">Tus datos se procesan de forma segura conforme a nuestra Política de Privacidad.</p>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <a class="foot-brand" href="index.html">
+        <img src="assets/logo.png" alt="Nuvo">
+        Nuvo
+      </a>
+      <div class="foot-links">
+        <a href="index.html#problema">El problema</a>
+        <a href="como-funciona.html">Cómo funciona</a>
+        <a href="valores.html">Por qué Nuvo</a>
+        <a href="planes.html">Planes</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>Soluciones digitales · Ecuador</span>
+      <span>&copy; <span id="year"></span> Nuvo. Todos los derechos reservados.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/script.js"></script>
+<script src="assets/adhesion.js"></script>
+
+</body>
+</html>
