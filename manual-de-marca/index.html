@@ -337,6 +337,23 @@ section.band.dark h2,section.band.dark h3{color:var(--blanco)}
 @media (max-width:620px){.closing .wrap{grid-template-columns:1fr}}
 footer{background:var(--marino);color:#8FB3BC;font-size:12.5px}
 footer .wrap{padding-block:22px;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+
+/* ---------- Impresión / PDF ---------- */
+@page{size:A4 landscape;margin:0}
+@media print{
+  html{scroll-behavior:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .topnav{display:none}
+  .cover{min-height:210mm;display:grid;align-items:center}
+  section.band{break-before:page;padding-block:40px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .cover .arc{display:none}
+  .closing{break-before:page;min-height:189mm;display:grid;align-items:center}
+  .closing .logo{width:220px}
+  footer{break-before:avoid}
+  .panel,.sw,.combo,.type-card,.apps figure,.gfx figure,.misuse figure,.versions .v,.ph,.values>div,.scale .r,.icons figure,.voice,.clear{break-inside:avoid}
+  .sec-head,.sec-lead,h3{break-after:avoid}
+  .copy{display:none}
+}
 </style>
 
 <nav class="topnav" aria-label="Secciones del manual">
