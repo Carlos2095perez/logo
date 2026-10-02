@@ -67,33 +67,52 @@ function _apiDespachos(e) {
         datos = _Datos.validarCierreCruzado(color);
         break;
 
-      // ---- ESCRITURA ----
+      // ---- ESCRITURA (llaman a _Datos directo -- NO a las funciones
+      //      publicas, que exigen token de sesion de la clave) ----
+      // Facturas: PAGADO/CREDITO (y deshacer con estadoPago vacio).
+      case 'estado':
+        exigeColor();
+        datos = _Datos.actualizarSoloEstado(color, parseInt(p.fila, 10), p.estadoPago || '');
+        break;
+      // Facturas: abono (valor de transferencia, manual).
+      case 'abono':
+        exigeColor();
+        datos = _Datos.actualizarSoloAbono(color, parseInt(p.fila, 10), normalizarNumero(p.valorTransferencia));
+        break;
+      // Compat: estado + abono juntos (no usado por la UI nueva).
       case 'marcarEstado': {
         exigeColor();
         var vt = (p.valorTransferencia === undefined || p.valorTransferencia === '') ? null : normalizarNumero(p.valorTransferencia);
         datos = _Datos.actualizarEstadoFactura(color, parseInt(p.fila, 10), p.estadoPago || '', vt);
         break;
       }
+      // Despacho: entrega / reagendar / incidencia (responsable = nombre del chofer).
       case 'registrarEntrega':
         exigeColor();
-        datos = registrarEntrega(color, _apiRuta(color), parseInt(p.fila, 10), p.cliente || '', p.factura || '', String(p.entregado) === 'true', p.responsable || '');
+        datos = _Datos.registrarEntrega(color, _apiRuta(color), parseInt(p.fila, 10), p.cliente || '', p.factura || '', String(p.entregado) === 'true', p.responsable || '');
         break;
       case 'reagendar':
         exigeColor();
-        datos = reagendarVisita(color, _apiRuta(color), parseInt(p.fila, 10), p.cliente || '', p.factura || '', p.responsable || '');
+        datos = _Datos.reagendarVisita(color, _apiRuta(color), parseInt(p.fila, 10), p.cliente || '', p.factura || '', p.responsable || '');
         break;
       case 'incidencia':
         exigeColor();
-        datos = registrarIncidencia(color, _apiRuta(color), parseInt(p.fila, 10), p.cliente || '', p.factura || '', p.motivo || '', p.fotoBase64 || '', p.responsable || '');
+        datos = _Datos.registrarIncidencia(color, _apiRuta(color), parseInt(p.fila, 10), p.cliente || '', p.factura || '', p.motivo || '', p.fotoBase64 || '', p.responsable || '');
         break;
+      // Egresos (tipos armados en el cliente: Gasolina/Alimentacion/etc.).
       case 'egreso':
         exigeColor();
         datos = _Datos.registrarEgreso(color, p.facturaRef || '', p.descripcion || '', normalizarNumero(p.monto));
         break;
+      // Cobros: igual que la app actual. OJO: el 4o argumento de
+      // _Datos.registrarCobroRuta (llamado "responsable") recibe el COLOR, tal
+      // como lo hace la UI de produccion -- la hoja COBROS guarda el color ahi
+      // y el resumen filtra por el. valorCobrado puede ser 'NO COBRADO'.
       case 'cobro': {
+        exigeColor();
         var detalles = null;
         if (p.banco || p.comprobante || p.numero) detalles = { banco: p.banco || '', comprobante: p.comprobante || '', numero: p.numero || '' };
-        datos = _Datos.registrarCobroRuta(parseInt(p.fila, 10), p.valor, p.formaPago || '', p.responsable || '', detalles);
+        datos = _Datos.registrarCobroRuta(parseInt(p.fila, 10), p.valor, p.formaPago || '', color, detalles);
         break;
       }
       default:
