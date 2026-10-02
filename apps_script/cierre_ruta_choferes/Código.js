@@ -77,6 +77,11 @@ function doGet(e) {
     ubic.forEach(function(u){ csv += '"' + String(u.cliente).replace(/"/g, '""') + '",' + u.lat + ',' + u.lng + '\n'; });
     return ContentService.createTextOutput(csv).setMimeType(ContentService.MimeType.CSV).downloadAsFile('ubicaciones_' + ubic.length + '.csv');
   }
+  // API de DESPACHOS para la app nueva (ver _ApiDespachos.js). Solo actua con
+  // ?api=... y token de servicio; no afecta a la PWA ni al login existentes.
+  if (e && e.parameter && e.parameter.api) {
+    return _apiDespachos(e);
+  }
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('INDUSTRIA ALIMENTICIA YES')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
