@@ -89,6 +89,16 @@ function doGet(e) {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
 }
 
+// doPost — SOLO para el API de despachos de la app nueva (payloads grandes
+// como la firma del cierre). Enruta igual que ?api=... (los campos del form
+// llegan en e.parameter). No afecta nada del flujo con google.script.run.
+function doPost(e) {
+  if (e && e.parameter && e.parameter.api) {
+    return _apiDespachos(e);
+  }
+  return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'sin accion' })).setMimeType(ContentService.MimeType.JSON);
+}
+
 // ============================================
 // getNavUrls — devuelve URLs de Ruta y Retiro
 // (Cierre está embebido, no necesita URL)

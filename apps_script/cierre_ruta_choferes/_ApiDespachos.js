@@ -66,6 +66,16 @@ function _apiDespachos(e) {
         exigeColor();
         datos = _Datos.validarCierreCruzado(color);
         break;
+      // Cierre final: manda el correo con el reporte + la firma. resumen y
+      // denominaciones llegan como JSON (string); la firma es un dataURL PNG.
+      // Va por POST (la firma es grande para un GET).
+      case 'finalizarCierre': {
+        exigeColor();
+        var resumen = typeof p.resumen === 'string' ? JSON.parse(p.resumen) : p.resumen;
+        var denom = typeof p.denominaciones === 'string' ? JSON.parse(p.denominaciones) : p.denominaciones;
+        datos = _Datos.finalizarCierre(color, _apiRuta(color), p.usuario || '', resumen, denom, p.firmaBase64 || '');
+        break;
+      }
 
       // ---- ESCRITURA (llaman a _Datos directo -- NO a las funciones
       //      publicas, que exigen token de sesion de la clave) ----
