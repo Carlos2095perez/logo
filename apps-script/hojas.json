@@ -1,0 +1,27 @@
+[
+  {
+    "nombre": "AZUL",
+    "spreadsheetId": "1qeMCdfZEW5F8lBxC2rwQ6fh8Zk61QM7wGDB2nOrpieg",
+    "scriptId": "PEGAR_SCRIPT_ID_AZUL"
+  },
+  {
+    "nombre": "ROSADO",
+    "spreadsheetId": "1mu5ozBGH8WNW3gMO2kYlib0FUpQ-xvzhpjXc245CXrc",
+    "scriptId": "PEGAR_SCRIPT_ID_ROSADO"
+  },
+  {
+    "nombre": "AMARILLO",
+    "spreadsheetId": "1u4uq9rnL44zWI1WX_sMr0u3vMTdyjAb6yIccZLkX3t0",
+    "scriptId": "PEGAR_SCRIPT_ID_AMARILLO"
+  },
+  {
+    "nombre": "VERDE",
+    "spreadsheetId": "1NYM-U1TfzOF1zYMVw3z-VJC_eKeapa1RUz0M4qJ4KmQ",
+    "scriptId": "PEGAR_SCRIPT_ID_VERDE"
+  },
+  {
+    "nombre": "NARANJA",
+    "spreadsheetId": "12rjhJNkPEHFQ6K732Zs_dojOqxrRXvb0TgdvqjkRzzg",
+    "scriptId": "PEGAR_SCRIPT_ID_NARANJA"
+  }
+]

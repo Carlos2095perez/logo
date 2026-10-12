@@ -1,0 +1,66 @@
+name: Apps Script (5 hojas de cierre)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps-script/src/**'
+      - 'apps-script/hojas.json'
+  workflow_dispatch:
+    inputs:
+      accion:
+        description: 'desplegar = subir src/ a las hojas; importar = traer el código actual de las hojas al repo'
+        type: choice
+        options: [desplegar, importar]
+        default: desplegar
+      hoja:
+        description: 'Solo esta hoja (AZUL, ROSADO, AMARILLO, VERDE, NARANJA). Vacío = todas. Solo aplica a desplegar.'
+        required: false
+        default: ''
+
+concurrency:
+  group: apps-script
+  cancel-in-progress: false
+
+jobs:
+  apps-script:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar clasp
+        run: npm install -g @google/clasp@2.4.2
+
+      - name: Credenciales de Google
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          if [ -z "$CLASPRC_JSON" ]; then
+            echo "Falta el secret CLASPRC_JSON (ver apps-script/README.md)." >&2
+            exit 1
+          fi
+          printf '%s' "$CLASPRC_JSON" > ~/.clasprc.json
+
+      - name: Desplegar en las hojas
+        if: github.event_name == 'push' || inputs.accion == 'desplegar'
+        run: bash apps-script/scripts/desplegar.sh "${{ inputs.hoja }}"
+
+      - name: Importar código actual de las hojas
+        if: github.event_name == 'workflow_dispatch' && inputs.accion == 'importar'
+        run: |
+          bash apps-script/scripts/importar.sh
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add apps-script/importado
+          if git diff --cached --quiet; then
+            echo "Sin cambios que importar."
+          else
+            git commit -m "Importar código actual de Apps Script de las hojas"
+            git push
+          fi
