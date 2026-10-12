@@ -8,7 +8,7 @@ SOLO="${1:-}"
 
 # Protección: clasp push reemplaza TODO el proyecto remoto. Si src/ no tiene
 # código real, un push borraría los scripts de las hojas.
-if ! ls "$BASE"/src/*.gs "$BASE"/src/*.js >/dev/null 2>&1; then
+if ! compgen -G "$BASE/src/*.gs" >/dev/null && ! compgen -G "$BASE/src/*.js" >/dev/null; then
   echo "AVISO: apps-script/src/ todavía no tiene archivos .gs/.js. No se despliega nada."
   exit 0
 fi
